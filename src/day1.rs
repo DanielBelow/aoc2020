@@ -1,3 +1,5 @@
+use aoc_runner_derive::{aoc, aoc_generator};
+
 #[aoc_generator(day1)]
 pub fn generate(inp: &str) -> Vec<u64> {
     let mut res = inp
