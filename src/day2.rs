@@ -21,14 +21,14 @@ impl PasswordPolicy {
 
     pub fn matches_p1(&self, inp: &str) -> bool {
         let num_chars = inp.chars().filter(|it| *it == self.chr).count();
-        num_chars >= self.min && num_chars <= self.max
+        (self.min..=self.max).contains(&num_chars)
     }
 
     pub fn matches_p2(&self, inp: &str) -> bool {
         let first = inp.chars().nth(self.min - 1).unwrap();
         let second = inp.chars().nth(self.max - 1).unwrap();
 
-        first == self.chr && second != self.chr || first != self.chr && second == self.chr
+        (first == self.chr) ^ (second == self.chr)
     }
 }
 
