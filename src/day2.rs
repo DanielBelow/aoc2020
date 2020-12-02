@@ -62,22 +62,14 @@ pub fn generate(inp: &str) -> Vec<PasswordData> {
 #[aoc(day2, part1)]
 pub fn part1(v: &[PasswordData]) -> usize {
     v.iter().fold(0, |acc, it| {
-        if it.policy.matches_p1(&it.password) {
-            acc + 1
-        } else {
-            acc
-        }
+        acc + it.policy.matches_p1(&it.password) as usize
     })
 }
 
 #[aoc(day2, part2)]
 pub fn part2(v: &[PasswordData]) -> usize {
     v.iter().fold(0, |acc, it| {
-        if it.policy.matches_p2(&it.password) {
-            acc + 1
-        } else {
-            acc
-        }
+        acc + it.policy.matches_p2(&it.password) as usize
     })
 }
 
