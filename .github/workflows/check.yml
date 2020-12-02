@@ -16,5 +16,7 @@ jobs:
         run: cargo build --verbose
       - name: rustfmt
         run: cargo fmt -- --check
+      - name: clippy
+        run: cargo clippy -- -Dwarnings
       - name: Test
         run: cargo test --verbose

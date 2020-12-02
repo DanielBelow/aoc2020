@@ -39,13 +39,13 @@ fn find_indices(num: u64, v: &[u64]) -> Option<(usize, usize)> {
 }
 
 #[aoc(day1, part1)]
-pub fn part1(v: &Vec<u64>) -> u64 {
-    let (low, high) = find_indices(2020, v.as_slice()).unwrap();
+pub fn part1(v: &[u64]) -> u64 {
+    let (low, high) = find_indices(2020, v).unwrap();
     v[low] * v[high]
 }
 
 #[aoc(day1, part2)]
-pub fn part2(v: &Vec<u64>) -> u64 {
+pub fn part2(v: &[u64]) -> u64 {
     let max_len = v.len() - 1;
 
     for i in 0..max_len {
