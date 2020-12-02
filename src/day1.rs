@@ -6,11 +6,15 @@ pub fn generate(inp: &str) -> Vec<u64> {
         .lines()
         .map(|it| it.parse::<u64>().unwrap())
         .collect::<Vec<_>>();
-    res.sort();
+    res.sort_unstable();
     res
 }
 
 fn find_indices(num: u64, v: &[u64]) -> Option<(usize, usize)> {
+    if v.is_empty() {
+        return None;
+    }
+
     let mut low = 0;
     let mut high = v.len() - 1;
 
@@ -54,4 +58,20 @@ pub fn part2(v: &Vec<u64>) -> u64 {
     }
 
     panic!("No match found!")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_find_indices() {
+        let inp = vec![1, 5, 2, 4, 3];
+        let res = find_indices(7, inp.as_slice());
+        assert!(res.is_some());
+        assert_eq!(res.unwrap(), (1, 2));
+
+        assert!(find_indices(2020, vec![].as_slice()).is_none());
+        assert!(find_indices(2020, vec![1, 2, 3].as_slice()).is_none());
+    }
 }
