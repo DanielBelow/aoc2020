@@ -1,5 +1,6 @@
-use aoc_runner_derive::{aoc, aoc_generator};
+use crate::iterator_ext::IteratorExt;
 
+use aoc_runner_derive::{aoc, aoc_generator};
 use lazy_static::lazy_static;
 use regex::Regex;
 
@@ -20,7 +21,7 @@ impl PasswordPolicy {
     }
 
     pub fn matches_p1(&self, inp: &str) -> bool {
-        let num_chars = inp.chars().filter(|it| *it == self.chr).count();
+        let num_chars = inp.chars().count_if(|it| it == self.chr);
         (self.min..=self.max).contains(&num_chars)
     }
 
@@ -37,40 +38,36 @@ pub struct PasswordData {
     password: String,
 }
 
+fn to_password_data(line: &str) -> PasswordData {
+    assert!(RE.is_match(line));
+
+    let captures = RE.captures(line).unwrap();
+
+    let policy = PasswordPolicy::new(
+        captures["Min"].parse().unwrap(),
+        captures["Max"].parse().unwrap(),
+        captures["Char"].parse().unwrap(),
+    );
+
+    PasswordData {
+        policy,
+        password: String::from(&captures["Text"]),
+    }
+}
+
 #[aoc_generator(day2)]
 pub fn generate(inp: &str) -> Vec<PasswordData> {
-    inp.lines()
-        .map(|it| {
-            assert!(RE.is_match(it));
-
-            let captures = RE.captures(it).unwrap();
-
-            let policy = PasswordPolicy::new(
-                captures["Min"].parse::<usize>().unwrap(),
-                captures["Max"].parse::<usize>().unwrap(),
-                captures["Char"].parse::<char>().unwrap(),
-            );
-
-            PasswordData {
-                policy,
-                password: String::from(&captures["Text"]),
-            }
-        })
-        .collect()
+    inp.lines().map(to_password_data).collect()
 }
 
 #[aoc(day2, part1)]
 pub fn part1(v: &[PasswordData]) -> usize {
-    v.iter().fold(0, |acc, it| {
-        acc + it.policy.matches_p1(&it.password) as usize
-    })
+    v.iter().count_if(|it| it.policy.matches_p1(&it.password))
 }
 
 #[aoc(day2, part2)]
 pub fn part2(v: &[PasswordData]) -> usize {
-    v.iter().fold(0, |acc, it| {
-        acc + it.policy.matches_p2(&it.password) as usize
-    })
+    v.iter().count_if(|it| it.policy.matches_p2(&it.password))
 }
 
 #[cfg(test)]
