@@ -1,63 +1,41 @@
 use crate::iterator_ext::IteratorExt;
 
+use parse_display::{Display as PDisplay, FromStr as PFromStr};
+
 use aoc_runner_derive::{aoc, aoc_generator};
-use lazy_static::lazy_static;
-use regex::Regex;
 
-lazy_static! {
-    static ref RE: Regex =
-        Regex::new(r"(?P<Min>\d+)-(?P<Max>\d+) (?P<Char>[A-Za-z]): (?P<Text>.*)").unwrap();
-}
-
+#[derive(PDisplay, PFromStr)]
+#[display("{min}-{max} {chr}")]
 pub struct PasswordPolicy {
     min: usize,
     max: usize,
     chr: char,
 }
 
-impl PasswordPolicy {
-    pub fn new(min: usize, max: usize, chr: char) -> Self {
-        Self { min, max, chr }
-    }
-
-    pub fn matches_p1(&self, inp: &str) -> bool {
-        let num_chars = inp.chars().count_if(|it| it == self.chr);
-        (self.min..=self.max).contains(&num_chars)
-    }
-
-    pub fn matches_p2(&self, inp: &str) -> bool {
-        let first = inp.chars().nth(self.min - 1).unwrap();
-        let second = inp.chars().nth(self.max - 1).unwrap();
-
-        (first == self.chr) ^ (second == self.chr)
-    }
-}
-
+#[derive(PDisplay, PFromStr)]
+#[display("{policy}: {password}")]
 pub struct PasswordData {
     policy: PasswordPolicy,
     password: String,
 }
 
-fn to_password_data(line: &str) -> PasswordData {
-    assert!(RE.is_match(line));
+impl PasswordPolicy {
+    pub fn matches_p1(&self, password: &str) -> bool {
+        let num_chars = password.chars().count_if(|it| it == self.chr);
+        (self.min..=self.max).contains(&num_chars)
+    }
 
-    let captures = RE.captures(line).unwrap();
+    pub fn matches_p2(&self, password: &str) -> bool {
+        let first = password.chars().nth(self.min - 1).unwrap();
+        let second = password.chars().nth(self.max - 1).unwrap();
 
-    let policy = PasswordPolicy::new(
-        captures["Min"].parse().unwrap(),
-        captures["Max"].parse().unwrap(),
-        captures["Char"].parse().unwrap(),
-    );
-
-    PasswordData {
-        policy,
-        password: String::from(&captures["Text"]),
+        (first == self.chr) ^ (second == self.chr)
     }
 }
 
 #[aoc_generator(day2)]
 pub fn generate(inp: &str) -> Vec<PasswordData> {
-    inp.lines().map(to_password_data).collect()
+    inp.lines().map(|it| it.parse().unwrap()).collect()
 }
 
 #[aoc(day2, part1)]
@@ -74,22 +52,30 @@ pub fn part2(v: &[PasswordData]) -> usize {
 mod tests {
     use super::*;
 
+    fn check_p1(pw: &str) -> bool {
+        let pw_data = pw.parse::<PasswordData>().unwrap();
+        pw_data.policy.matches_p1(&pw_data.password)
+    }
+
+    fn check_p2(pw: &str) -> bool {
+        let pw_data = pw.parse::<PasswordData>().unwrap();
+        pw_data.policy.matches_p2(&pw_data.password)
+    }
+
     #[test]
     fn test_policy_part1() {
-        let policy = PasswordPolicy::new(1, 2, 'a');
-        assert!(policy.matches_p1("aab"));
-        assert!(policy.matches_p1("abc"));
+        assert!(check_p1("1-2 a: aab"));
+        assert!(check_p1("1-2 a: aba"));
 
-        assert!(!policy.matches_p1("bbbb"));
-        assert!(!policy.matches_p1("aaaa"));
+        assert!(!check_p1("1-2 a: bbc"));
+        assert!(!check_p1("1-2 a: aaa"));
     }
 
     #[test]
     fn test_policy_part2() {
-        let policy = PasswordPolicy::new(1, 2, 'a');
-        assert!(policy.matches_p2("abcd"));
-        assert!(policy.matches_p2("dabc"));
+        assert!(check_p2("1-2 a: abcd"));
+        assert!(check_p2("1-2 a: dabc"));
 
-        assert!(!policy.matches_p2("aabc"));
+        assert!(!check_p2("1-2 a: aabc"));
     }
 }
