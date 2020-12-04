@@ -31,14 +31,14 @@ pub fn generate(inp: &str) -> Vec<PassportData> {
         .split("\n\n")
         .map(|it| {
             let data = it.replace("\n", " ");
-            let fields = WS_RE.replace_all(data.as_str(), " ").split(&" ").fold(
-                HashMap::new(),
-                |mut acc, spl| {
+            let fields = WS_RE
+                .replace_all(data.as_str().trim(), " ")
+                .split(&" ")
+                .fold(HashMap::new(), |mut acc, spl| {
                     let kvp = spl.parse::<KeyValuePair>().unwrap();
                     acc.insert(kvp.key, kvp.value);
                     acc
-                },
-            );
+                });
 
             PassportData { fields }
         })
