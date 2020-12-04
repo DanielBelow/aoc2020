@@ -5,7 +5,7 @@ use itertools::Itertools;
 use lazy_static::lazy_static;
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 use regex::Regex;
-use std::collections::HashMap;
+use std::collections::HashSet;
 
 lazy_static! {
     static ref HAIR_RE: Regex = Regex::new(r"^#[0-9a-f]{6}$").unwrap();
@@ -13,15 +13,45 @@ lazy_static! {
     static ref WS_RE: Regex = Regex::new(r"\s{2,}").unwrap();
 }
 
-pub struct PassportData {
-    fields: HashMap<String, String>,
+#[derive(PDisplay, PFromStr)]
+pub enum HeightUnit {
+    #[display("{0}cm")]
+    Centimeter(usize),
+
+    #[display("{0}in")]
+    Inch(usize),
 }
 
-#[derive(PDisplay, PFromStr)]
-#[display("{key}:{value}")]
-struct KeyValuePair {
-    key: String,
-    value: String,
+#[derive(PDisplay, PFromStr, Eq, PartialEq, Debug, Hash)]
+pub enum PassportEntry {
+    #[display("byr:{0}")]
+    BirthYear(usize),
+
+    #[display("iyr:{0}")]
+    IssueYear(usize),
+
+    #[display("eyr:{0}")]
+    ExpirationYear(usize),
+
+    #[display("hgt:{0}")]
+    Height(String),
+
+    #[display("hcl:{0}")]
+    HairColor(String),
+
+    #[display("ecl:{0}")]
+    EyeColor(String),
+
+    #[display("pid:{0}")]
+    PassportID(String),
+
+    #[display("cid:{0}")]
+    CountryID(String),
+}
+
+#[derive(Debug)]
+pub struct PassportData {
+    entries: HashSet<PassportEntry>,
 }
 
 #[aoc_generator(day4)]
@@ -31,80 +61,126 @@ pub fn generate(inp: &str) -> Vec<PassportData> {
         .split("\n\n")
         .map(|it| {
             let data = it.replace("\n", " ");
-            let fields = WS_RE
+            let entries = WS_RE
                 .replace_all(data.as_str().trim(), " ")
                 .split(&" ")
-                .fold(HashMap::new(), |mut acc, spl| {
-                    let kvp = spl.parse::<KeyValuePair>().unwrap();
-                    acc.insert(kvp.key, kvp.value);
-                    acc
-                });
+                .map(|it| it.parse::<PassportEntry>().unwrap())
+                .collect::<HashSet<_>>();
 
-            PassportData { fields }
+            PassportData { entries }
         })
         .collect()
 }
 
+fn has_required_fields(pd: &PassportData) -> bool {
+    let num_fields = pd.entries.len();
+    if num_fields == 8 {
+        return true;
+    }
+
+    let has_country_id = pd
+        .entries
+        .iter()
+        .any(|it| matches!(it, PassportEntry::CountryID(_)));
+
+    !has_country_id && num_fields == 7
+}
+
 #[aoc(day4, part1)]
 pub fn part1(pd: &[PassportData]) -> usize {
-    pd.iter().count_if(|it| {
-        it.fields.len() == 8
-            || (it.fields.len() == 7 && !it.fields.contains_key(&String::from("cid")))
-    })
+    pd.iter().count_if(has_required_fields)
 }
 
-fn validate_range(low: usize, high: usize, value: &str) -> bool {
-    value
-        .parse::<usize>()
+fn validate_range(low: usize, high: usize, value: usize) -> bool {
+    (low..=high).contains(&value)
+}
+
+fn validate_height(height: &str) -> bool {
+    height
+        .parse::<HeightUnit>()
         .ok()
-        .filter(|it| (low..=high).contains(&it))
-        .is_some()
-}
-
-fn validate_height(value: &str) -> bool {
-    if !value.ends_with("cm") && !value.ends_with("in") {
-        return false;
-    }
-
-    let num = value.chars().dropping_back(2).as_str();
-    if value.ends_with("cm") {
-        validate_range(150, 193, num)
-    } else {
-        validate_range(59, 76, num)
-    }
+        .map(|it| match it {
+            HeightUnit::Centimeter(num) => validate_range(150, 193, num),
+            HeightUnit::Inch(num) => validate_range(59, 76, num),
+        })
+        .unwrap_or(false)
 }
 
 fn is_valid(pd: &PassportData) -> bool {
-    const FIELDS: &[&str] = &["byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid"];
     const EYE_COLORS: &[&str] = &["amb", "blu", "brn", "gry", "grn", "hzl", "oth"];
 
-    FIELDS.iter().all(|it| {
-        if !pd.fields.contains_key(*it) {
-            return false;
-        }
-
-        let value = pd.fields.get(*it).unwrap();
-        match *it {
-            "byr" => validate_range(1920, 2002, value),
-            "iyr" => validate_range(2010, 2020, value),
-            "eyr" => validate_range(2020, 2030, value),
-            "hgt" => validate_height(value),
-            "hcl" => HAIR_RE.is_match(value),
-            "ecl" => EYE_COLORS.contains(&value.as_str()),
-            "pid" => PID_RE.is_match(value),
-            _ => false,
-        }
+    pd.entries.iter().all(|it| match it {
+        PassportEntry::BirthYear(y) => validate_range(1920, 2002, *y),
+        PassportEntry::IssueYear(y) => validate_range(2010, 2020, *y),
+        PassportEntry::ExpirationYear(y) => validate_range(2020, 2030, *y),
+        PassportEntry::Height(h) => validate_height(&h.as_str()),
+        PassportEntry::HairColor(cl) => HAIR_RE.is_match(cl),
+        PassportEntry::EyeColor(cl) => EYE_COLORS.contains(&cl.as_str()),
+        PassportEntry::PassportID(id) => PID_RE.is_match(&id.as_str()),
+        PassportEntry::CountryID(_) => true,
     })
 }
 
 #[aoc(day4, part2)]
 pub fn part2(pd: &[PassportData]) -> usize {
-    pd.iter().count_if(is_valid)
+    pd.iter()
+        .count_if(|it| has_required_fields(it) && is_valid(it))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_parsing_fields() {
+        let byr = "byr:1929";
+        assert_eq!(
+            byr.parse::<PassportEntry>().unwrap(),
+            PassportEntry::BirthYear(1929)
+        );
+
+        let iyr = "iyr:2017";
+        assert_eq!(
+            iyr.parse::<PassportEntry>().unwrap(),
+            PassportEntry::IssueYear(2017)
+        );
+
+        let eyr = "eyr:2020";
+        assert_eq!(
+            eyr.parse::<PassportEntry>().unwrap(),
+            PassportEntry::ExpirationYear(2020)
+        );
+
+        let hgt = "hgt:183cm";
+        assert_eq!(
+            hgt.parse::<PassportEntry>().unwrap(),
+            PassportEntry::Height("183cm".to_string())
+        );
+
+        let hcl = "hcl:#AAACCC";
+        assert_eq!(
+            hcl.parse::<PassportEntry>().unwrap(),
+            PassportEntry::HairColor("#AAACCC".to_string())
+        );
+
+        let ecl = "ecl:blu";
+        assert_eq!(
+            ecl.parse::<PassportEntry>().unwrap(),
+            PassportEntry::EyeColor("blu".to_string())
+        );
+
+        let pid = "pid:123456789";
+        assert_eq!(
+            pid.parse::<PassportEntry>().unwrap(),
+            PassportEntry::PassportID("123456789".to_string())
+        );
+
+        let cid = "cid:147";
+        assert_eq!(
+            cid.parse::<PassportEntry>().unwrap(),
+            PassportEntry::CountryID("147".to_string())
+        );
+    }
 
     #[test]
     fn test_simple() {
@@ -126,5 +202,44 @@ mod tests {
         assert_eq!(data.len(), 4);
 
         assert_eq!(part1(&data), 2);
+    }
+
+    #[test]
+    fn test_part2_valid_passports() {
+        let inp = "pid:087499704 hgt:74in ecl:grn iyr:2012 eyr:2030 byr:1980
+                          hcl:#623a2f
+
+                          eyr:2029 ecl:blu cid:129 byr:1989
+                          iyr:2014 pid:896056539 hcl:#a97842 hgt:165cm
+
+                          hcl:#888785
+                          hgt:164cm byr:2001 iyr:2015 cid:88
+                          pid:545766238 ecl:hzl
+                          eyr:2022
+
+                          iyr:2010 hgt:158cm hcl:#b6652a ecl:blu byr:1944 eyr:2021 pid:093154719";
+
+        let data = generate(inp);
+        assert_eq!(4, part2(&data));
+    }
+
+    #[test]
+    fn test_part2_invalid_passports() {
+        let inp = "eyr:1972 cid:100
+                   hcl:#18171d ecl:amb hgt:170 pid:186cm iyr:2018 byr:1926
+
+                   iyr:2019
+                   hcl:#602927 eyr:1967 hgt:170cm
+                   ecl:grn pid:012533040 byr:1946
+
+                   hcl:dab227 iyr:2012
+                   ecl:brn hgt:182cm pid:021572410 eyr:2020 byr:1992 cid:277
+
+                   hgt:59cm ecl:zzz
+                   eyr:2038 hcl:74454a iyr:2023
+                   pid:3556412378 byr:2007";
+
+        let data = generate(inp);
+        assert_eq!(0, part2(&data));
     }
 }
