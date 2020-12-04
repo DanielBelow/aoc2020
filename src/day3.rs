@@ -59,7 +59,8 @@ pub fn part1(m: &Map) -> usize {
 pub fn part2(m: &Map) -> usize {
     const SLOPES: [(usize, usize); 5] = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
 
-    SLOPES.iter().fold(1, |acc, &(right, down)| {
-        acc * count_trees_on_slope(right, down, m)
-    })
+    SLOPES
+        .iter()
+        .map(|&(right, down)| count_trees_on_slope(right, down, m))
+        .product()
 }
