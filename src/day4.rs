@@ -49,37 +49,35 @@ pub enum PassportEntry {
     CountryID(String),
 }
 
-#[derive(Debug)]
-pub struct PassportData {
-    entries: HashSet<PassportEntry>,
+fn remove_whitespace(s: &str) -> String {
+    let rem_linebreaks = s.replace("\n", " ");
+    WS_RE.replace_all(rem_linebreaks.trim(), " ").to_string()
 }
 
 #[aoc_generator(day4)]
-pub fn generate(inp: &str) -> Vec<PassportData> {
+pub fn generate(inp: &str) -> Vec<HashSet<PassportEntry>> {
     inp.lines()
         .join("\n")
         .split("\n\n")
-        .map(|it| {
-            let data = it.replace("\n", " ");
-            let entries = WS_RE
-                .replace_all(data.as_str().trim(), " ")
+        .map(remove_whitespace)
+        .fold(Vec::new(), |mut acc, it| {
+            let entries = it
                 .split(&" ")
                 .map(|it| it.parse::<PassportEntry>().unwrap())
                 .collect::<HashSet<_>>();
 
-            PassportData { entries }
+            acc.push(entries);
+            acc
         })
-        .collect()
 }
 
-fn has_required_fields(pd: &PassportData) -> bool {
-    let num_fields = pd.entries.len();
+fn has_required_fields(pd: &HashSet<PassportEntry>) -> bool {
+    let num_fields = pd.len();
     if num_fields == 8 {
         return true;
     }
 
     let has_country_id = pd
-        .entries
         .iter()
         .any(|it| matches!(it, PassportEntry::CountryID(_)));
 
@@ -87,7 +85,7 @@ fn has_required_fields(pd: &PassportData) -> bool {
 }
 
 #[aoc(day4, part1)]
-pub fn part1(pd: &[PassportData]) -> usize {
+pub fn part1(pd: &[HashSet<PassportEntry>]) -> usize {
     pd.iter().count_if(has_required_fields)
 }
 
@@ -106,10 +104,10 @@ fn validate_height(height: &str) -> bool {
         .unwrap_or(false)
 }
 
-fn is_valid(pd: &PassportData) -> bool {
+fn is_valid(pd: &HashSet<PassportEntry>) -> bool {
     const EYE_COLORS: &[&str] = &["amb", "blu", "brn", "gry", "grn", "hzl", "oth"];
 
-    pd.entries.iter().all(|it| match it {
+    pd.iter().all(|it| match it {
         PassportEntry::BirthYear(y) => validate_range(1920, 2002, *y),
         PassportEntry::IssueYear(y) => validate_range(2010, 2020, *y),
         PassportEntry::ExpirationYear(y) => validate_range(2020, 2030, *y),
@@ -122,7 +120,7 @@ fn is_valid(pd: &PassportData) -> bool {
 }
 
 #[aoc(day4, part2)]
-pub fn part2(pd: &[PassportData]) -> usize {
+pub fn part2(pd: &[HashSet<PassportEntry>]) -> usize {
     pd.iter()
         .count_if(|it| has_required_fields(it) && is_valid(it))
 }

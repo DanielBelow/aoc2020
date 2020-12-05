@@ -35,12 +35,12 @@ fn find_product(num: u64, v: &[u64]) -> Option<u64> {
 }
 
 #[aoc(day1, part1)]
-pub fn part1(v: &[u64]) -> u64 {
-    find_product(2020, v).unwrap_or(0)
+pub fn part1(v: &[u64]) -> Option<u64> {
+    find_product(2020, v)
 }
 
 #[aoc(day1, part2)]
-pub fn part2(v: &[u64]) -> u64 {
+pub fn part2(v: &[u64]) -> Option<u64> {
     (0..v.len() - 1)
         .map(|it| {
             let curr = v[it];
@@ -49,7 +49,6 @@ pub fn part2(v: &[u64]) -> u64 {
             curr * find_product(2020 - curr, rem).unwrap_or(0)
         })
         .find(|it| *it != 0)
-        .unwrap_or(0)
 }
 
 #[cfg(test)]
