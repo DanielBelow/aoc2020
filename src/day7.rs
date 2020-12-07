@@ -52,22 +52,36 @@ pub fn generate(inp: &str) -> BagsWithContents {
         })
 }
 
-fn can_hold_shiny_gold(check: &HashMap<String, usize>, all_bags: &BagsWithContents) -> bool {
+fn can_hold_shiny_gold(
+    check: &HashMap<String, usize>,
+    all_bags: &BagsWithContents,
+    bag_cache: &mut HashMap<String, bool>,
+) -> bool {
     if check.contains_key("shiny gold") {
         return true;
     }
 
     check.keys().any(|k| {
-        all_bags
+        if let Some(res) = bag_cache.get(k) {
+            return *res;
+        }
+
+        let res = all_bags
             .get(k)
-            .map(|it| can_hold_shiny_gold(it, all_bags))
-            .unwrap_or(false)
+            .map(|it| can_hold_shiny_gold(it, all_bags, bag_cache))
+            .unwrap_or(false);
+
+        bag_cache.insert(k.to_string(), res);
+
+        res
     })
 }
 
 #[aoc(day7, part1)]
 pub fn part1(bags: &BagsWithContents) -> usize {
-    bags.values().count_if(|it| can_hold_shiny_gold(it, bags))
+    let mut bag_cache = HashMap::new();
+    bags.values()
+        .count_if(|it| can_hold_shiny_gold(it, bags, &mut bag_cache))
 }
 
 fn count_nested_bags(bag: &HashMap<String, usize>, all_bags: &BagsWithContents) -> usize {
