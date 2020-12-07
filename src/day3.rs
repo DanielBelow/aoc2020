@@ -14,7 +14,7 @@ const TREE: char = '#';
 #[aoc_generator(day3)]
 pub fn generate(inp: &str) -> Map {
     let height = inp.lines().count();
-    let width = inp.lines().next().unwrap().chars().count();
+    let width = inp.lines().next().map(|l| l.chars().count()).unwrap_or(0);
 
     let trees = inp
         .lines()

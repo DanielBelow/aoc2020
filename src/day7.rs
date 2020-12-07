@@ -46,7 +46,7 @@ pub fn generate(inp: &str) -> BagsWithContents {
 
             split
                 .first()
-                .map(|it| acc.insert(it.to_string(), nested_bags));
+                .map(|&it| acc.insert(it.to_string(), nested_bags));
 
             acc
         })

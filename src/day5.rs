@@ -6,7 +6,11 @@ use std::num::ParseIntError;
 pub fn generate(inp: &str) -> Vec<usize> {
     inp.lines()
         .map(String::from)
-        .filter_map(|it| get_seat_id(&it).map_err(|it| println!("{}", it)).ok())
+        .filter_map(|it| {
+            get_seat_id(&it)
+                .map_err(|it| println!("Error: {}", it))
+                .ok()
+        })
         .sorted()
         .collect()
 }
@@ -54,14 +58,14 @@ mod tests {
 
     #[test]
     fn test_seat_ids() {
-        assert_eq!(357, get_seat_id("FBFBBFFRLR").unwrap());
-        assert_eq!(567, get_seat_id("BFFFBBFRRR").unwrap());
-        assert_eq!(119, get_seat_id("FFFBBBFRRR").unwrap());
-        assert_eq!(820, get_seat_id("BBFFBBFRLL").unwrap());
+        assert_eq!(Ok(357), get_seat_id("FBFBBFFRLR"));
+        assert_eq!(Ok(567), get_seat_id("BFFFBBFRRR"));
+        assert_eq!(Ok(119), get_seat_id("FFFBBBFRRR"));
+        assert_eq!(Ok(820), get_seat_id("BBFFBBFRLL"));
     }
 
     #[test]
     fn test_missing_int() {
-        assert_eq!(2, find_missing_seat(&[1, 3, 4, 5]).unwrap());
+        assert_eq!(Some(2), find_missing_seat(&[1, 3, 4, 5]));
     }
 }

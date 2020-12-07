@@ -1,4 +1,5 @@
 #![warn(nonstandard_style, rust_2018_idioms)]
+#![allow(clippy::implicit_hasher)]
 
 mod iterator_ext;
 

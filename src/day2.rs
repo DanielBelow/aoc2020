@@ -1,8 +1,7 @@
 use crate::iterator_ext::IteratorExt;
 
-use parse_display::{Display as PDisplay, FromStr as PFromStr};
-
 use aoc_runner_derive::{aoc, aoc_generator};
+use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
 #[derive(PDisplay, PFromStr)]
 #[display("{min}-{max} {chr}")]
@@ -26,16 +25,21 @@ impl PasswordPolicy {
     }
 
     pub fn matches_p2(&self, password: &str) -> bool {
-        let first = password.chars().nth(self.min - 1).unwrap();
-        let second = password.chars().nth(self.max - 1).unwrap();
+        let first = password.chars().nth(self.min - 1);
+        let second = password.chars().nth(self.max - 1);
 
-        (first == self.chr) ^ (second == self.chr)
+        match (first, second) {
+            (Some(f), Some(s)) => (f == self.chr) ^ (s == self.chr),
+            _ => false,
+        }
     }
 }
 
 #[aoc_generator(day2)]
 pub fn generate(inp: &str) -> Vec<PasswordData> {
-    inp.lines().map(|it| it.parse().unwrap()).collect()
+    inp.lines()
+        .filter_map(|it| it.parse().map_err(|e| println!("Error: {}", e)).ok())
+        .collect()
 }
 
 #[aoc(day2, part1)]
@@ -53,13 +57,15 @@ mod tests {
     use super::*;
 
     fn check_p1(pw: &str) -> bool {
-        let pw_data = pw.parse::<PasswordData>().unwrap();
-        pw_data.policy.matches_p1(&pw_data.password)
+        pw.parse::<PasswordData>()
+            .map(|pd| pd.policy.matches_p1(&pd.password))
+            .unwrap_or(false)
     }
 
     fn check_p2(pw: &str) -> bool {
-        let pw_data = pw.parse::<PasswordData>().unwrap();
-        pw_data.policy.matches_p2(&pw_data.password)
+        pw.parse::<PasswordData>()
+            .map(|pd| pd.policy.matches_p2(&pd.password))
+            .unwrap_or(false)
     }
 
     #[test]

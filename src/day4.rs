@@ -54,6 +54,12 @@ fn remove_whitespace(s: &str) -> String {
     WS_RE.replace_all(rem_linebreaks.trim(), " ").to_string()
 }
 
+pub fn parse_passport_entry(line: &str) -> Option<PassportEntry> {
+    line.parse::<PassportEntry>()
+        .map_err(|e| println!("Error: {}", e))
+        .ok()
+}
+
 #[aoc_generator(day4)]
 pub fn generate(inp: &str) -> Vec<HashSet<PassportEntry>> {
     inp.lines()
@@ -63,7 +69,7 @@ pub fn generate(inp: &str) -> Vec<HashSet<PassportEntry>> {
         .fold(Vec::new(), |mut acc, it| {
             let entries = it
                 .split(&" ")
-                .map(|it| it.parse::<PassportEntry>().unwrap())
+                .filter_map(parse_passport_entry)
                 .collect::<HashSet<_>>();
 
             acc.push(entries);
@@ -133,50 +139,50 @@ mod tests {
     fn test_parsing_fields() {
         let byr = "byr:1929";
         assert_eq!(
-            byr.parse::<PassportEntry>().unwrap(),
-            PassportEntry::BirthYear(1929)
+            parse_passport_entry(byr),
+            Some(PassportEntry::BirthYear(1929))
         );
 
         let iyr = "iyr:2017";
         assert_eq!(
-            iyr.parse::<PassportEntry>().unwrap(),
-            PassportEntry::IssueYear(2017)
+            parse_passport_entry(iyr),
+            Some(PassportEntry::IssueYear(2017))
         );
 
         let eyr = "eyr:2020";
         assert_eq!(
-            eyr.parse::<PassportEntry>().unwrap(),
-            PassportEntry::ExpirationYear(2020)
+            parse_passport_entry(eyr),
+            Some(PassportEntry::ExpirationYear(2020))
         );
 
         let hgt = "hgt:183cm";
         assert_eq!(
-            hgt.parse::<PassportEntry>().unwrap(),
-            PassportEntry::Height("183cm".to_string())
+            parse_passport_entry(hgt),
+            Some(PassportEntry::Height("183cm".to_string()))
         );
 
         let hcl = "hcl:#AAACCC";
         assert_eq!(
-            hcl.parse::<PassportEntry>().unwrap(),
-            PassportEntry::HairColor("#AAACCC".to_string())
+            parse_passport_entry(hcl),
+            Some(PassportEntry::HairColor("#AAACCC".to_string()))
         );
 
         let ecl = "ecl:blu";
         assert_eq!(
-            ecl.parse::<PassportEntry>().unwrap(),
-            PassportEntry::EyeColor("blu".to_string())
+            parse_passport_entry(ecl),
+            Some(PassportEntry::EyeColor("blu".to_string()))
         );
 
         let pid = "pid:123456789";
         assert_eq!(
-            pid.parse::<PassportEntry>().unwrap(),
-            PassportEntry::PassportID("123456789".to_string())
+            parse_passport_entry(pid),
+            Some(PassportEntry::PassportID("123456789".to_string()))
         );
 
         let cid = "cid:147";
         assert_eq!(
-            cid.parse::<PassportEntry>().unwrap(),
-            PassportEntry::CountryID("147".to_string())
+            parse_passport_entry(cid),
+            Some(PassportEntry::CountryID("147".to_string()))
         );
     }
 
