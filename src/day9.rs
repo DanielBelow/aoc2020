@@ -32,7 +32,7 @@ fn find_elem_without_sum(slice: &[i64], preamble_size: usize) -> Option<i64> {
     let last_num = slice.last()?;
 
     let mut slice = slice[..preamble_size].to_vec();
-    slice.sort();
+    slice.sort_unstable();
 
     if !contains_sum(*last_num, &slice) {
         Some(*last_num)
