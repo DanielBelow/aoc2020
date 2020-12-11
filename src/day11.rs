@@ -73,37 +73,47 @@ fn get_next_state(
     })
 }
 
+fn fill_new_seats(
+    prev_map: &MapData,
+    single_step: bool,
+    occupation_limit: usize,
+) -> Option<(MapElements, bool)> {
+    let mut next_map_elements = MapElements::new();
+    let mut has_changes = false;
+
+    for row in 0..prev_map.height {
+        for col in 0..prev_map.width {
+            let cur_state = prev_map.elements.get(&(row, col))?;
+            let next_state = get_next_state(row, col, single_step, occupation_limit, &prev_map)?;
+            next_map_elements.insert((row, col), next_state);
+
+            if next_state != *cur_state {
+                has_changes = true;
+            }
+        }
+    }
+
+    Some((next_map_elements, has_changes))
+}
+
 fn run_simulation_until_stable(
     map: &MapData,
     single_step: bool,
     occupation_limit: usize,
 ) -> Option<usize> {
-    let mut has_changed = true;
-
     let mut prev_map = map.clone();
+    loop {
+        let (next_map_elems, has_changes) =
+            fill_new_seats(&prev_map, single_step, occupation_limit)?;
 
-    while has_changed {
-        let mut next_map_elements = MapElements::new();
-
-        has_changed = false;
-
-        for row in 0..map.height {
-            for col in 0..map.width {
-                let cur_state = prev_map.elements.get(&(row, col))?;
-                let next_state =
-                    get_next_state(row, col, single_step, occupation_limit, &prev_map)?;
-                next_map_elements.insert((row, col), next_state);
-
-                if next_state != *cur_state {
-                    has_changed = true;
-                }
-            }
+        if !has_changes {
+            break;
         }
 
         prev_map = MapData {
             width: map.width,
             height: map.height,
-            elements: next_map_elements,
+            elements: next_map_elems,
         };
     }
 
