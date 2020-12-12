@@ -9,6 +9,21 @@ pub struct Map {
     height: usize,
 }
 
+impl Map {
+    fn count_trees_on_slope(&self, right: usize, down: usize) -> usize {
+        let width = self.width;
+        let trees = &self.trees;
+
+        (0..=self.height)
+            .step_by(down)
+            .enumerate()
+            .count_if(|(idx, y)| {
+                let x = (idx * right) % width;
+                trees.contains(&(x, y))
+            })
+    }
+}
+
 const TREE: char = '#';
 
 #[aoc_generator(day3)]
@@ -37,22 +52,9 @@ pub fn generate(inp: &str) -> Map {
     }
 }
 
-fn count_trees_on_slope(right: usize, down: usize, m: &Map) -> usize {
-    let width = m.width;
-    let trees = &m.trees;
-
-    (0..=m.height)
-        .step_by(down)
-        .enumerate()
-        .count_if(|(idx, y)| {
-            let x = (idx * right) % width;
-            trees.contains(&(x, y))
-        })
-}
-
 #[aoc(day3, part1)]
 pub fn part1(m: &Map) -> usize {
-    count_trees_on_slope(3, 1, m)
+    m.count_trees_on_slope(3, 1)
 }
 
 #[aoc(day3, part2)]
@@ -61,6 +63,6 @@ pub fn part2(m: &Map) -> usize {
 
     SLOPES
         .iter()
-        .map(|&(right, down)| count_trees_on_slope(right, down, m))
+        .map(|&(right, down)| m.count_trees_on_slope(right, down))
         .product()
 }

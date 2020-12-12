@@ -54,8 +54,13 @@ fn count_paths(v: &[i64], idx: usize, cache: &mut HashMap<usize, i64>) -> i64 {
     let num_paths = v
         .iter()
         .enumerate()
-        .filter(|(_, it)| **it > cur_elem && **it <= cur_elem + 3)
-        .map(|(it, _)| it)
+        .filter_map(|(idx, it)| {
+            if *it > cur_elem && *it <= cur_elem + 3 {
+                Some(idx)
+            } else {
+                None
+            }
+        })
         .fold(0, |acc, it| acc + count_paths(v, it, cache));
 
     cache.insert(idx, num_paths);

@@ -4,7 +4,7 @@ use itertools::Itertools;
 #[aoc_generator(day1)]
 pub fn generate(inp: &str) -> Vec<u64> {
     inp.lines()
-        .filter_map(|it| it.parse::<u64>().map_err(|e| println!("Error: {}", e)).ok())
+        .filter_map(|it| it.parse().map_err(|e| println!("Error: {}", e)).ok())
         .sorted()
         .collect()
 }
