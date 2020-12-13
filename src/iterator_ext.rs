@@ -5,7 +5,10 @@ pub trait IteratorExt<T> {
         P: FnMut(T) -> bool;
 }
 
-impl<T: Iterator> IteratorExt<T::Item> for T {
+impl<T> IteratorExt<T::Item> for T
+where
+    T: Iterator,
+{
     #[inline]
     fn count_if<P>(self, mut predicate: P) -> usize
     where
