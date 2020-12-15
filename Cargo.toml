@@ -20,3 +20,6 @@ lazy_static = "1.4.0"
 
 num-traits = "0.2.14"
 num-derive = "0.3.3"
+
+[profile.test]
+opt-level = 3
