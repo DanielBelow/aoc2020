@@ -1,4 +1,3 @@
-#![feature(assoc_char_funcs)]
 #![deny(unsafe_code)]
 #![warn(nonstandard_style, rust_2018_idioms)]
 #![allow(clippy::implicit_hasher)]
