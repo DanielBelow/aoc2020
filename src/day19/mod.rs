@@ -30,20 +30,20 @@ pub fn generate(inp: &str) -> Option<Messages> {
     let rules = spl.next()?;
     let rules = rules
         .lines()
-        .map(|it| {
-            let colon_pos = it.chars().position(|it| it == ':').unwrap();
-            let from = it[..colon_pos].parse::<usize>().unwrap();
+        .filter_map(|it| {
+            let colon_pos = it.chars().position(|it| it == ':')?;
+            let from = it[..colon_pos].parse::<usize>().ok()?;
 
             let prods = &it[colon_pos + 1..];
             let production = if prods.contains('|') {
                 // OR
                 let mut psplt = prods.split('|');
-                let lhs = psplt.next().unwrap();
+                let lhs = psplt.next()?;
                 let lhs = lhs
                     .split(' ')
                     .filter_map(|it| it.parse::<usize>().ok())
                     .collect_vec();
-                let rhs = psplt.next().unwrap();
+                let rhs = psplt.next()?;
                 let rhs = rhs
                     .split(' ')
                     .filter_map(|it| it.parse::<usize>().ok())
@@ -51,7 +51,7 @@ pub fn generate(inp: &str) -> Option<Messages> {
                 Production::Or((lhs, rhs))
             } else if prods.contains('"') {
                 // TERM
-                let chr = prods.chars().nth(2).unwrap();
+                let chr = prods.chars().nth(2)?;
                 Production::Terminal(chr)
             } else {
                 // COMPOUND
@@ -62,10 +62,10 @@ pub fn generate(inp: &str) -> Option<Messages> {
                 Production::Compound(comp)
             };
 
-            Rule {
+            Some(Rule {
                 idx: from,
                 grule: production,
-            }
+            })
         })
         .collect_vec();
 
@@ -77,72 +77,87 @@ pub fn generate(inp: &str) -> Option<Messages> {
     Some(Messages { rules, text })
 }
 
-fn to_regex(idx: usize, rules: &[Rule], p2: bool) -> String {
+fn to_regex(idx: usize, rules: &[Rule], p2: bool) -> Option<String> {
     if p2 {
         if idx == 8 {
-            let rule = to_regex(42, rules, p2);
-            return format!("{}+", rule);
+            return match to_regex(42, rules, p2) {
+                Some(rgx) => Some(format!("{}+", rgx)),
+                _ => None,
+            };
         } else if idx == 11 {
-            let rule_lhs = to_regex(42, rules, p2);
-            let rule_rhs = to_regex(31, rules, p2);
+            return to_regex(42, rules, p2).and_then(|fourty_two| {
+                to_regex(31, rules, p2)
+                    .map(|thirty_one| {
+                        let mut res = String::new();
+                        res.push('(');
 
-            let mut res = String::new();
-            res.push('(');
+                        // 11: 42 31
+                        res.push_str(fourty_two.as_str());
+                        res.push_str(thirty_one.as_str());
 
-            // 11: 42 31
-            res.push_str(rule_lhs.as_str());
-            res.push_str(rule_rhs.as_str());
+                        // 11: 42 11 31
+                        for idx in 2..10 {
+                            let num_rep = idx.to_string();
 
-            // 11: 42 11 31
-            for idx in 2..10 {
-                let num_rep = idx.to_string();
+                            res.push('|');
 
-                res.push('|');
+                            res.push_str(fourty_two.as_str());
+                            res.push('{');
+                            res.push_str(num_rep.as_str());
+                            res.push('}');
 
-                res.push_str(rule_lhs.as_str());
-                res.push('{');
-                res.push_str(num_rep.as_str());
-                res.push('}');
+                            res.push_str(thirty_one.as_str());
+                            res.push('{');
+                            res.push_str(num_rep.as_str());
+                            res.push('}');
+                        }
 
-                res.push_str(rule_rhs.as_str());
-                res.push('{');
-                res.push_str(num_rep.as_str());
-                res.push('}');
-            }
+                        res.push(')');
 
-            res.push(')');
-
-            return res;
+                        Some(res)
+                    })
+                    .unwrap_or_default()
+            });
         }
     }
 
-    let rule = rules.iter().find(|it| it.idx == idx).unwrap();
+    let rule = rules.iter().find(|it| it.idx == idx)?;
 
     let mut res = String::new();
-
     match &rule.grule {
         Production::Terminal(c) => {
             let re = format!("[{}]", c);
             res.push_str(re.as_str());
         }
         Production::Compound(v) => {
-            let v = v.iter().map(|it| to_regex(*it, rules, p2)).join("");
+            let v = v.iter().filter_map(|it| to_regex(*it, rules, p2)).join("");
             res.push_str(v.as_str());
         }
         Production::Or((lhs, rhs)) => {
-            let lhs = lhs.iter().map(|it| to_regex(*it, rules, p2)).join("");
-            let rhs = rhs.iter().map(|it| to_regex(*it, rules, p2)).join("");
+            let lhs = lhs
+                .iter()
+                .filter_map(|it| to_regex(*it, rules, p2))
+                .join("");
+            let rhs = rhs
+                .iter()
+                .filter_map(|it| to_regex(*it, rules, p2))
+                .join("");
             let re = format!("({}|{})", lhs, rhs);
             res.push_str(re.as_str());
         }
     }
 
-    res
+    Some(res)
 }
 
-fn rules_to_regex(rules: &[Rule], p2: bool) -> Regex {
-    let re = format!("^{}$", to_regex(0, rules, p2));
-    Regex::new(re.as_str()).unwrap()
+fn rules_to_regex(rules: &[Rule], p2: bool) -> Option<Regex> {
+    match to_regex(0, rules, p2) {
+        Some(rgx) => {
+            let re = format!("^{}$", rgx);
+            Regex::new(re.as_str()).ok()
+        }
+        _ => None,
+    }
 }
 
 fn count_matches(msgs: &[String], re: &Regex) -> usize {
@@ -150,15 +165,19 @@ fn count_matches(msgs: &[String], re: &Regex) -> usize {
 }
 
 #[aoc(day19, part1)]
-pub fn part1(data: &Messages) -> usize {
-    let re = rules_to_regex(&data.rules, false);
-    count_matches(&data.text, &re)
+pub fn part1(data: &Messages) -> Option<usize> {
+    match rules_to_regex(&data.rules, false) {
+        Some(re) => Some(count_matches(&data.text, &re)),
+        _ => None,
+    }
 }
 
 #[aoc(day19, part2)]
-pub fn part2(data: &Messages) -> usize {
-    let re = rules_to_regex(&data.rules, true);
-    count_matches(&data.text, &re)
+pub fn part2(data: &Messages) -> Option<usize> {
+    match rules_to_regex(&data.rules, true) {
+        Some(re) => Some(count_matches(&data.text, &re)),
+        _ => None,
+    }
 }
 
 #[cfg(test)]
@@ -181,7 +200,7 @@ aaabbb
 aaaabbb";
 
         let data = generate(inp).unwrap();
-        assert_eq!(2, part1(&data));
+        assert_eq!(Some(2), part1(&data));
     }
 
     #[test]
@@ -235,7 +254,7 @@ babaaabbbaaabaababbaabababaaab
 aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba";
 
         let data = generate(inp).unwrap();
-        assert_eq!(3, part1(&data));
+        assert_eq!(Some(3), part1(&data));
     }
 
     #[test]
@@ -289,6 +308,6 @@ babaaabbbaaabaababbaabababaaab
 aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba";
 
         let data = generate(inp).unwrap();
-        assert_eq!(12, part2(&data));
+        assert_eq!(Some(12), part2(&data));
     }
 }

@@ -186,27 +186,28 @@ fn wrap_add_in_parens(toks: &[MathToken]) -> Vec<MathToken> {
             .iter()
             .skip(last_add_idx)
             .position(|it| matches!(it, MathToken::Add));
-        if add_pos.is_none() {
+
+        if let Some(add_pos) = add_pos {
+            let add_pos = add_pos + last_add_idx;
+
+            let start_pos = if matches!(res[add_pos - 1], MathToken::RParen) {
+                find_opening_paren(add_pos - 2, &res)
+            } else {
+                add_pos - 1
+            };
+
+            let end_pos = if matches!(res[add_pos + 1], MathToken::LParen) {
+                find_closing_paren(add_pos + 2, &res)
+            } else {
+                add_pos + 2
+            };
+
+            res.insert(end_pos, MathToken::RParen);
+            res.insert(start_pos, MathToken::LParen);
+            last_add_idx = add_pos + 2;
+        } else {
             break;
         }
-
-        let add_pos = add_pos.unwrap() + last_add_idx;
-
-        let start_pos = if matches!(res[add_pos - 1], MathToken::RParen) {
-            find_opening_paren(add_pos - 2, &res)
-        } else {
-            add_pos - 1
-        };
-
-        let end_pos = if matches!(res[add_pos + 1], MathToken::LParen) {
-            find_closing_paren(add_pos + 2, &res)
-        } else {
-            add_pos + 2
-        };
-
-        res.insert(end_pos, MathToken::RParen);
-        res.insert(start_pos, MathToken::LParen);
-        last_add_idx = add_pos + 2;
     }
 
     res
