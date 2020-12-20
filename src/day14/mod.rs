@@ -123,7 +123,7 @@ fn run_initialization(
     init_func: impl Fn(&Initialization, &mut Ram),
 ) -> u64 {
     init_sequence.iter().for_each(|it| init_func(it, memory));
-    memory.iter().fold(0, |acc, (_, val)| acc + *val)
+    memory.iter().sum_by(|(_, val)| *val)
 }
 
 #[aoc(day14, part1)]

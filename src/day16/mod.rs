@@ -94,13 +94,10 @@ pub fn generate(inp: &str) -> Option<TicketData> {
 
 #[aoc(day16, part1)]
 pub fn part1(v: &TicketData) -> usize {
-    v.nearby_tickets.iter().fold(0, |acc, it| {
-        let invalid_field = it.iter().find(|field| !v.matches_any_rule(**field));
-        match invalid_field {
-            None => acc,
-            Some(f) => acc + f,
-        }
-    })
+    v.nearby_tickets
+        .iter()
+        .filter_map(|it| it.iter().find(|field| !v.matches_any_rule(**field)))
+        .sum()
 }
 
 fn try_remove_single_rule(rule: &FieldRules, remove_from: &mut Vec<Vec<&FieldRules>>) -> bool {

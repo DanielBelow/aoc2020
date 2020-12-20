@@ -35,15 +35,14 @@ fn get_answers_map(group_answers: &[&str]) -> HashMap<char, usize> {
 
 #[aoc(day6, part1)]
 pub fn part1(groups: &[Group]) -> usize {
-    groups.iter().map(|it| it.answers.values().count()).sum()
+    groups.iter().sum_by(|it| it.answers.values().count())
 }
 
 #[aoc(day6, part2)]
 pub fn part2(groups: &[Group]) -> usize {
     groups
         .iter()
-        .map(|it| it.answers.values().count_if(|v| *v == it.num_people))
-        .sum()
+        .sum_by(|it| it.answers.values().count_if(|v| *v == it.num_people))
 }
 
 #[cfg(test)]

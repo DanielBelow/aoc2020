@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::iterator_ext::IteratorExt;
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 
@@ -61,7 +62,7 @@ fn count_paths(v: &[i64], idx: usize, cache: &mut HashMap<usize, i64>) -> i64 {
                 None
             }
         })
-        .fold(0, |acc, it| acc + count_paths(v, it, cache));
+        .sum_by(|it| count_paths(v, it, cache));
 
     cache.insert(idx, num_paths);
 

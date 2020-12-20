@@ -1,6 +1,8 @@
-use crate::iterator_ext::IteratorExt;
-
 use std::collections::HashMap;
+
+use itertools::iproduct;
+
+use crate::iterator_ext::IteratorExt;
 
 pub struct SimulationContext {
     single_step: bool,
@@ -70,9 +72,8 @@ impl MapData {
             (1, 1),
         ];
 
-        DIRECTIONS.iter().fold(0, |acc, (rd, cd)| {
-            acc + self
-                .count_occupied_seats(row, col, *rd, *cd, single_step)
+        DIRECTIONS.iter().sum_by(|(rd, cd)| {
+            self.count_occupied_seats(row, col, *rd, *cd, single_step)
                 .unwrap_or(0)
         })
     }
@@ -129,15 +130,13 @@ fn run_iteration(prev_map: &MapData, context: &SimulationContext) -> Option<(Map
     let mut next_map_elements = MapElements::new();
     let mut has_changes = false;
 
-    for row in 0..prev_map.height {
-        for col in 0..prev_map.width {
-            let cur_state = prev_map.elements.get(&(row, col))?;
-            let next_state = prev_map.get_next_state(row, col, context)?;
-            next_map_elements.insert((row, col), next_state);
+    for (row, col) in iproduct!(0..prev_map.height, 0..prev_map.width) {
+        let cur_state = prev_map.elements.get(&(row, col))?;
+        let next_state = prev_map.get_next_state(row, col, context)?;
+        next_map_elements.insert((row, col), next_state);
 
-            if next_state != *cur_state {
-                has_changes = true;
-            }
+        if next_state != *cur_state {
+            has_changes = true;
         }
     }
 

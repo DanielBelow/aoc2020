@@ -1,5 +1,6 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
+use crate::iterator_ext::IteratorExt;
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
 #[derive(PDisplay, PFromStr, PartialEq, Copy, Clone, Debug)]
@@ -220,12 +221,12 @@ fn simplify_with_precedence(toks: &[MathToken]) -> usize {
 
 #[aoc(day18, part1)]
 pub fn part1(toks: &[Vec<MathToken>]) -> usize {
-    toks.iter().map(|it| simplify(it)).sum()
+    toks.iter().sum_by(|it| simplify(it))
 }
 
 #[aoc(day18, part2)]
 pub fn part2(toks: &[Vec<MathToken>]) -> usize {
-    toks.iter().map(|it| simplify_with_precedence(it)).sum()
+    toks.iter().sum_by(|it| simplify_with_precedence(it))
 }
 
 #[cfg(test)]
