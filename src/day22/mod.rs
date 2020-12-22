@@ -1,8 +1,9 @@
 use crate::iterator_ext::IteratorExt;
 use aoc_runner_derive::{aoc, aoc_generator};
+use itertools::Itertools;
 use std::collections::{HashSet, VecDeque};
 
-#[derive(PartialEq, Eq, Hash, Clone, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone)]
 pub struct Game {
     player: VecDeque<usize>,
     ferris: VecDeque<usize>,
@@ -55,11 +56,9 @@ fn play_combat(game: &mut Game) {
         let f_first = game.ferris.pop_front().unwrap();
 
         if p_first > f_first {
-            game.player.push_back(p_first);
-            game.player.push_back(f_first);
+            game.player.extend([p_first, f_first].iter());
         } else {
-            game.ferris.push_back(f_first);
-            game.ferris.push_back(p_first);
+            game.ferris.extend([f_first, p_first].iter());
         }
     }
 }
@@ -75,8 +74,8 @@ fn play_recursive_combat(game: &mut Game) {
 
         cache.insert(game.clone());
 
-        let p_first = game.player.pop_front().unwrap();
-        let f_first = game.ferris.pop_front().unwrap();
+        let p_first = game.player.pop_front().expect("Shouldn't be empty!");
+        let f_first = game.ferris.pop_front().expect("Shouldn't be empty!");
 
         let player_won = if game.can_recurse(p_first, f_first) {
             let mut sub_game = Game {
@@ -91,11 +90,9 @@ fn play_recursive_combat(game: &mut Game) {
         };
 
         if player_won {
-            game.player.push_back(p_first);
-            game.player.push_back(f_first);
+            game.player.extend([p_first, f_first].iter());
         } else {
-            game.ferris.push_back(f_first);
-            game.ferris.push_back(p_first);
+            game.ferris.extend([f_first, p_first].iter());
         }
     }
 }
