@@ -1,6 +1,5 @@
 use crate::iterator_ext::IteratorExt;
 use aoc_runner_derive::{aoc, aoc_generator};
-use itertools::Itertools;
 use std::collections::{HashSet, VecDeque};
 
 #[derive(PartialEq, Eq, Hash, Clone)]
@@ -10,6 +9,18 @@ pub struct Game {
 }
 
 impl Game {
+    fn with_cards(
+        player: &VecDeque<usize>,
+        p_num: usize,
+        ferris: &VecDeque<usize>,
+        f_num: usize,
+    ) -> Self {
+        Self {
+            player: player.iter().take(p_num).copied().collect(),
+            ferris: ferris.iter().take(f_num).copied().collect(),
+        }
+    }
+
     fn player_won(&self) -> bool {
         self.ferris.is_empty()
     }
@@ -37,8 +48,8 @@ fn parse_card_deck(lines: &str) -> VecDeque<usize> {
     lines
         .lines()
         .skip(1)
-        .filter_map(|it| it.parse::<usize>().ok())
-        .collect::<VecDeque<_>>()
+        .filter_map(|it| it.parse().map_err(|e| println!("Error: {}", e)).ok())
+        .collect()
 }
 
 #[aoc_generator(day22)]
@@ -52,8 +63,8 @@ pub fn generate(inp: &str) -> Option<Game> {
 
 fn play_combat(game: &mut Game) {
     while !game.player.is_empty() && !game.ferris.is_empty() {
-        let p_first = game.player.pop_front().unwrap();
-        let f_first = game.ferris.pop_front().unwrap();
+        let p_first = game.player.pop_front().expect("Shouldn't be empty!");
+        let f_first = game.ferris.pop_front().expect("Shouldn't be empty!");
 
         if p_first > f_first {
             game.player.extend([p_first, f_first].iter());
@@ -67,22 +78,13 @@ fn play_recursive_combat(game: &mut Game) {
     let mut cache = HashSet::new();
 
     while !game.player.is_empty() && !game.ferris.is_empty() {
-        if cache.contains(game) {
-            game.ferris.clear();
-            return;
-        }
-
         cache.insert(game.clone());
 
         let p_first = game.player.pop_front().expect("Shouldn't be empty!");
         let f_first = game.ferris.pop_front().expect("Shouldn't be empty!");
 
         let player_won = if game.can_recurse(p_first, f_first) {
-            let mut sub_game = Game {
-                player: game.player.iter().take(p_first).copied().collect(),
-                ferris: game.ferris.iter().take(f_first).copied().collect(),
-            };
-
+            let mut sub_game = Game::with_cards(&game.player, p_first, &game.ferris, f_first);
             play_recursive_combat(&mut sub_game);
             sub_game.player_won()
         } else {
@@ -93,6 +95,11 @@ fn play_recursive_combat(game: &mut Game) {
             game.player.extend([p_first, f_first].iter());
         } else {
             game.ferris.extend([f_first, p_first].iter());
+        }
+
+        if cache.contains(game) {
+            game.ferris.clear();
+            return;
         }
     }
 }
