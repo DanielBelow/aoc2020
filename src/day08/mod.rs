@@ -1,7 +1,7 @@
-use aoc_runner_derive::{aoc, aoc_generator};
-
-use parse_display::{Display as PDisplay, FromStr as PFromStr};
 use std::collections::HashSet;
+
+use aoc_runner_derive::{aoc, aoc_generator};
+use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
 #[derive(PDisplay, PFromStr, Debug, Clone)]
 pub enum Instruction {
@@ -85,15 +85,13 @@ fn try_replace_and_run(v: &[Instruction], inst: &Instruction, idx: usize) -> Opt
 
 #[aoc(day8, part2)]
 pub fn part2(v: &[Instruction]) -> Option<i64> {
-    for i in 0..v.len() {
-        let inst = &v[i];
-
-        if let Some((acc, true)) = try_replace_and_run(v, inst, i) {
-            return Some(acc);
+    (0..v.len()).find_map(|it| {
+        let inst = &v[it];
+        match try_replace_and_run(v, inst, it) {
+            Some((acc, true)) => Some(acc),
+            _ => None,
         }
-    }
-
-    None
+    })
 }
 
 #[cfg(test)]

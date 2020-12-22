@@ -1,7 +1,8 @@
-use crate::iterator_ext::IteratorExt;
+use std::collections::HashSet;
 
 use aoc_runner_derive::{aoc, aoc_generator};
-use std::collections::HashSet;
+
+use crate::iterator_ext::IteratorExt;
 
 pub struct Map {
     trees: HashSet<(usize, usize)>,
@@ -34,15 +35,14 @@ pub fn generate(inp: &str) -> Map {
     let trees = inp
         .lines()
         .enumerate()
-        .fold(HashSet::new(), |mut acc, (y, line)| {
-            line.chars()
-                .enumerate()
-                .filter_map(|(idx, chr)| if chr == TREE { Some(idx) } else { None })
-                .for_each(|x| {
-                    acc.insert((x, y));
-                });
+        .fold(HashSet::new(), |acc, (y, line)| {
+            line.chars().enumerate().fold(acc, |mut acc, (idx, chr)| {
+                if chr == TREE {
+                    acc.insert((idx, y));
+                }
 
-            acc
+                acc
+            })
         });
 
     Map {
@@ -65,4 +65,33 @@ pub fn part2(m: &Map) -> usize {
         .iter()
         .map(|&(right, down)| m.count_trees_on_slope(right, down))
         .product()
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    const INP: &str = "..##.......
+#...#...#..
+.#....#..#.
+..#.#...#.#
+.#...##..#.
+..#.##.....
+.#.#.#....#
+.#........#
+#.##...#...
+#...##....#
+.#..#...#.#";
+
+    #[test]
+    fn test_part1() {
+        let data = generate(INP);
+        assert_eq!(7, part1(&data));
+    }
+
+    #[test]
+    fn test_part2() {
+        let data = generate(INP);
+        assert_eq!(336, part2(&data));
+    }
 }

@@ -1,9 +1,10 @@
-mod map_data;
-use map_data::{run_simulation_until_stable, MapData, MapTile, SimulationContext};
-
 use std::collections::HashMap;
 
 use aoc_runner_derive::{aoc, aoc_generator};
+
+use map_data::{run_simulation_until_stable, MapData, MapTile, SimulationContext};
+
+mod map_data;
 
 #[aoc_generator(day11)]
 pub fn generate(inp: &str) -> MapData {

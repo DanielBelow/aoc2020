@@ -73,17 +73,15 @@ fn chinese_remainder_theorem(residues: &[i64], modulii: &[i64]) -> Option<i64> {
 pub fn part1(v: &BusSchedule) -> Option<i64> {
     let depart = v.earliest_depart;
 
-    let scaled_buses = v
-        .buses
+    v.buses
         .iter()
         .map(|it| {
             let time = find_lowest_gt(depart, it.id);
             (it.id, time)
         })
         .sorted_by_key(|(_, time)| *time)
-        .collect_vec();
-
-    scaled_buses.first().map(|(id, time)| id * (time - depart))
+        .next()
+        .map(|(id, time)| id * (time - depart))
 }
 
 #[aoc(day13, part2)]

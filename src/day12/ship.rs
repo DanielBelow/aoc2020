@@ -1,7 +1,6 @@
-use parse_display::{Display as PDisplay, FromStr as PFromStr};
-
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
+use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
 #[derive(Copy, Clone, FromPrimitive)]
 pub enum Direction {
@@ -154,12 +153,8 @@ impl ShipWithWaypoint {
         self.position.x_pos += to_move_x;
         self.position.y_pos += to_move_y;
 
-        let new_waypoint = Waypoint {
-            x_pos: to_move_x + self.waypoint.x_pos,
-            y_pos: to_move_y + self.waypoint.y_pos,
-        };
-
-        self.waypoint = new_waypoint;
+        self.waypoint.x_pos += to_move_x;
+        self.waypoint.y_pos += to_move_y;
     }
 }
 

@@ -1,9 +1,10 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
-mod map_data;
 use map_data::{
     run_simulation_steps_3d, run_simulation_steps_4d, MapData3d, MapData4d, SimulationContext,
 };
+
+mod map_data;
 
 const NUM_ITER: usize = 6;
 

@@ -1,6 +1,7 @@
+use std::num::ParseIntError;
+
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
-use std::num::ParseIntError;
 
 #[aoc_generator(day5)]
 pub fn generate(inp: &str) -> Vec<usize> {

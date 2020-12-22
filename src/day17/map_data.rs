@@ -1,6 +1,6 @@
-use crate::iterator_ext::IteratorExt;
-
 use itertools::iproduct;
+
+use crate::iterator_ext::IteratorExt;
 
 pub struct SimulationContext {
     num_steps: usize,
@@ -13,7 +13,7 @@ impl SimulationContext {
 }
 
 type MapElements3D = Vec<Vec<Vec<bool>>>;
-type MapElements4D = Vec<Vec<Vec<Vec<bool>>>>;
+type MapElements4D = Vec<MapElements3D>;
 
 #[derive(Clone)]
 pub struct MapData3d {

@@ -152,11 +152,7 @@ pub fn run_simulation_until_stable(map: &MapData, context: &SimulationContext) -
             break;
         }
 
-        prev_map = MapData {
-            width: map.width,
-            height: map.height,
-            elements: next_map_elems,
-        };
+        prev_map.elements = next_map_elems;
     }
 
     Some(prev_map.count_occupied())

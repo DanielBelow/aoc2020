@@ -1,13 +1,13 @@
-use aoc_runner_derive::{aoc, aoc_generator};
-use itertools::Itertools;
 use std::collections::HashMap;
+
+use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day15)]
 pub fn generate(inp: &str) -> Option<Vec<usize>> {
     inp.lines().next().map(|it| {
         it.split(',')
             .filter_map(|it| it.parse::<usize>().ok())
-            .collect_vec()
+            .collect()
     })
 }
 

@@ -1,8 +1,10 @@
-use crate::iterator_ext::IteratorExt;
-use aoc_runner_derive::{aoc, aoc_generator};
 use std::collections::hash_map::DefaultHasher;
 use std::collections::{HashSet, VecDeque};
 use std::hash::{Hash, Hasher};
+
+use aoc_runner_derive::{aoc, aoc_generator};
+
+use crate::iterator_ext::IteratorExt;
 
 #[derive(PartialEq, Eq, Hash, Clone)]
 pub struct Game {

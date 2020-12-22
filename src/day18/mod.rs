@@ -1,7 +1,7 @@
 use aoc_runner_derive::{aoc, aoc_generator};
+use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
 use crate::iterator_ext::IteratorExt;
-use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
 #[derive(PDisplay, PFromStr, PartialEq, Copy, Clone, Debug)]
 pub enum MathToken {

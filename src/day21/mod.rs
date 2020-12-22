@@ -1,6 +1,10 @@
+use std::collections::{HashMap, HashSet};
+use std::iter::FromIterator;
+
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
-use std::collections::{HashMap, HashSet};
+
+use crate::iterator_ext::IteratorExt;
 
 pub struct IngredientList {
     ingredients: Vec<String>,
@@ -34,7 +38,7 @@ pub fn generate(inp: &str) -> Vec<IngredientList> {
 
 fn get_allergen_map(data: &[IngredientList]) -> HashMap<String, HashSet<String>> {
     data.iter().fold(HashMap::new(), |mut acc, it| {
-        let ingredients = it.ingredients.iter().cloned().collect::<HashSet<_>>();
+        let ingredients = HashSet::from_iter(it.ingredients.iter().cloned());
         for all in it.allergens.iter() {
             acc.entry(all.to_string())
                 .and_modify(|it| *it = it.intersection(&ingredients).cloned().collect())
@@ -48,18 +52,20 @@ fn get_allergen_map(data: &[IngredientList]) -> HashMap<String, HashSet<String>>
 pub fn part1(data: &[IngredientList]) -> usize {
     let allergen_map = get_allergen_map(data);
 
-    let safe_ingredients = data
-        .iter()
-        .flat_map(|it| it.ingredients.clone())
-        .filter(|it| allergen_map.values().find(|f| f.contains(it)).is_none())
-        .collect::<HashSet<_>>();
+    let safe_ingredients =
+        data.iter()
+            .flat_map(|it| it.ingredients.clone())
+            .fold(HashSet::new(), |mut acc, it| {
+                if allergen_map.values().none(|f| f.contains(&it)) {
+                    acc.insert(it);
+                }
+                acc
+            });
 
-    data.iter().fold(0, |acc, it| {
-        acc + it
-            .ingredients
+    data.iter().sum_by(|it| {
+        it.ingredients
             .iter()
-            .filter(|i| safe_ingredients.contains(*i))
-            .count()
+            .count_if(|it| safe_ingredients.contains(it))
     })
 }
 
@@ -69,16 +75,16 @@ fn find_single_ingredients(
     let mut res = Vec::new();
 
     while !all_map.is_empty() {
-        all_map
+        let mut elems = all_map
             .iter()
             .filter_map(|(k, v)| {
-                if let Ok(v) = v.iter().exactly_one() {
-                    Some((k, v))
-                } else {
-                    None
-                }
+                v.iter()
+                    .exactly_one()
+                    .map(|it| (k.to_owned(), it.to_owned()))
+                    .ok()
             })
-            .for_each(|(k, v)| res.push((k.to_owned(), v.to_owned())));
+            .collect();
+        res.append(&mut elems);
 
         res.iter().for_each(|(k, _)| {
             all_map.remove(k);

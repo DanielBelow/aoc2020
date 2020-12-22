@@ -1,7 +1,8 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
-mod ship;
 use ship::{NavigationAction, Ship, ShipWithWaypoint, SimpleShip};
+
+mod ship;
 
 #[aoc_generator(day12)]
 pub fn generate(inp: &str) -> Vec<NavigationAction> {

@@ -1,10 +1,12 @@
-use crate::iterator_ext::IteratorExt;
+use std::collections::HashMap;
 
 use aoc_runner_derive::{aoc, aoc_generator};
+use itertools::Itertools;
 use lazy_static::lazy_static;
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 use regex::Regex;
-use std::collections::HashMap;
+
+use crate::iterator_ext::IteratorExt;
 
 lazy_static! {
     static ref CLEAN_BAGS: Regex = Regex::new(r#"(\.|bags|bag)"#).unwrap();
@@ -40,7 +42,7 @@ pub fn generate(inp: &str) -> BagsWithContents {
     inp.lines()
         .map(clean_input_line)
         .fold(HashMap::new(), |mut acc, line| {
-            let split = line.split(',').map(|l| l.trim()).collect::<Vec<_>>();
+            let split = line.split(',').map(|l| l.trim()).collect_vec();
 
             let nested_bags = parse_nested_bags(&split);
 

@@ -1,7 +1,7 @@
-use crate::iterator_ext::IteratorExt;
-
 use aoc_runner_derive::{aoc, aoc_generator};
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
+
+use crate::iterator_ext::IteratorExt;
 
 #[derive(PDisplay, PFromStr)]
 #[display("{min}-{max} {chr}")]

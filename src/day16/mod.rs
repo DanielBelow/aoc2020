@@ -1,7 +1,8 @@
 use aoc_runner_derive::{aoc, aoc_generator};
-
 use itertools::Itertools;
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
+
+use crate::iterator_ext::IteratorExt;
 
 #[derive(PDisplay, PFromStr, PartialEq, Clone)]
 #[display("{from}-{to}")]
@@ -122,11 +123,11 @@ fn find_rule_order(mut rules: Vec<Vec<&FieldRules>>) -> Vec<FieldRules> {
             .copied()
             .collect_vec();
 
-        let any_changed = single_rules
+        let no_changes = single_rules
             .iter()
-            .any(|rule| try_remove_single_rule(*rule, &mut rules));
+            .none(|rule| try_remove_single_rule(*rule, &mut rules));
 
-        if !any_changed {
+        if no_changes {
             break;
         }
     }

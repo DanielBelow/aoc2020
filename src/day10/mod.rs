@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use crate::iterator_ext::IteratorExt;
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
+
+use crate::iterator_ext::IteratorExt;
 
 #[aoc_generator(day10)]
 pub fn generate(inp: &str) -> Vec<i64> {
@@ -42,8 +43,8 @@ pub fn part1(jolts: &[i64]) -> i64 {
 }
 
 fn count_paths(v: &[i64], idx: usize, cache: &mut HashMap<usize, i64>) -> i64 {
-    if cache.contains_key(&idx) {
-        return cache.get(&idx).copied().unwrap_or(0);
+    if let Some(val) = cache.get(&idx) {
+        return *val;
     }
 
     if idx == v.len() - 1 {
@@ -70,8 +71,8 @@ fn count_paths(v: &[i64], idx: usize, cache: &mut HashMap<usize, i64>) -> i64 {
 }
 
 #[aoc(day10, part2)]
-pub fn part2(jolts: &[i64]) -> Option<i64> {
-    Some(count_paths(jolts, 0, &mut HashMap::new()))
+pub fn part2(jolts: &[i64]) -> i64 {
+    count_paths(jolts, 0, &mut HashMap::new())
 }
 
 #[cfg(test)]
@@ -105,7 +106,7 @@ mod tests {
 
     #[test]
     fn test_sample_part2() {
-        assert_eq!(Some(8), part2(&input_small()));
-        assert_eq!(Some(19208), part2(&input_large()));
+        assert_eq!(8, part2(&input_small()));
+        assert_eq!(19208, part2(&input_large()));
     }
 }

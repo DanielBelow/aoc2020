@@ -47,8 +47,7 @@ fn find_invalid_number(numbers: &[i64], preamble_size: usize) -> Option<i64> {
         .as_slice()
         .windows(preamble_size + 1)
         .skip(preamble_size)
-        .filter_map(|it| find_elem_without_sum(it, preamble_size))
-        .next()
+        .find_map(|it| find_elem_without_sum(it, preamble_size))
 }
 
 #[aoc(day9, part1)]
@@ -59,22 +58,16 @@ pub fn part1(numbers: &[i64]) -> Option<i64> {
 fn find_invalid_sum(numbers: &[i64], to_find: i64) -> Option<i64> {
     let find_idx = numbers.iter().position(|it| *it == to_find)?;
 
-    for win_size in 3..find_idx {
-        let res = numbers
-            .windows(win_size)
-            .filter(|it| it.iter().sum::<i64>() == to_find)
-            .filter_map(|it| {
+    (3..find_idx).find_map(|win_size| {
+        numbers.windows(win_size).find_map(|it| {
+            if it.iter().sum::<i64>() == to_find {
                 let (min, max) = it.iter().minmax().into_option()?;
                 Some(*min + *max)
-            })
-            .next();
-
-        if let Some(r) = res {
-            return Some(r);
-        }
-    }
-
-    None
+            } else {
+                None
+            }
+        })
+    })
 }
 
 #[aoc(day9, part2)]

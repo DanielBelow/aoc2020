@@ -1,10 +1,9 @@
-use crate::iterator_ext::IteratorExt;
+use std::collections::HashMap;
 
 use aoc_runner_derive::{aoc, aoc_generator};
-use itertools::*;
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
-use std::collections::HashMap;
+use crate::iterator_ext::IteratorExt;
 
 #[derive(PDisplay, PFromStr)]
 #[display("mask = {mask}")]
@@ -53,7 +52,7 @@ fn apply_value_bitmask(inp: String, mask: &str) -> String {
     inp.chars()
         .zip(mask.chars())
         .map(|(l, r)| if r == 'X' { l } else { r })
-        .collect::<String>()
+        .collect()
 }
 
 fn apply_index_bitmask(inp: String, mask: &str) -> String {
@@ -61,21 +60,21 @@ fn apply_index_bitmask(inp: String, mask: &str) -> String {
         .zip(mask.chars())
         .map(|(l, r)| match r {
             '0' => l,
-            '1' => '1',
-            'X' => 'X',
-            _ => panic!("Invalid input bit"),
+            _ => r,
         })
-        .collect::<String>()
+        .collect()
 }
 
 fn init_memory(init: &Initialization, memory: &mut Ram) {
     let mask = &init.mask.mask;
 
-    init.accesses.iter().for_each(|acc| {
-        let new_val = apply_value_bitmask(format!("{:036b}", acc.value), mask);
+    init.accesses.iter().fold(memory, |acc, it| {
+        let new_val = apply_value_bitmask(format!("{:036b}", it.value), mask);
         if let Ok(new_val) = u64::from_str_radix(&new_val, 2) {
-            memory.insert(acc.index, new_val);
+            acc.insert(it.index, new_val);
         }
+
+        acc
     });
 }
 
@@ -86,13 +85,13 @@ fn to_padded_binary_string(inp: usize, padding: usize) -> String {
 fn generate_floating_combinations(num_floating: usize) -> Vec<String> {
     (0..2_usize.pow(num_floating as u32))
         .map(|it| to_padded_binary_string(it, num_floating))
-        .collect_vec()
+        .collect()
 }
 
 fn init_memory_v2(init: &Initialization, memory: &mut Ram) {
     let mask = &init.mask.mask;
 
-    init.accesses.iter().for_each(|acc| {
+    for acc in init.accesses.iter() {
         let new_index = apply_index_bitmask(format!("{:036b}", acc.index), mask);
 
         let num_floating = new_index.chars().count_if(|it| it == 'X');
@@ -114,7 +113,7 @@ fn init_memory_v2(init: &Initialization, memory: &mut Ram) {
                 memory.insert(idx, acc.value as u64);
             }
         }
-    });
+    }
 }
 
 fn run_initialization(

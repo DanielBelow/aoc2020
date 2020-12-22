@@ -39,13 +39,11 @@ impl MapTile {
     }
 
     fn replace_sea_monsters(&mut self) {
-        for y in 1..self.map.len() - 1 {
-            for x in 0..(self.map[y].len() - 19) {
-                if self.is_sea_monster_at(x, y) {
-                    MONSTER_OFFSETS.iter().for_each(|(dy, dx)| {
-                        self.map[(y as i64 + dy) as usize][(x as i64 + dx) as usize] = 'O'
-                    });
-                }
+        for (y, x) in iproduct!(1..self.map.len() - 1, 0..self.map.len() - 19) {
+            if self.is_sea_monster_at(x, y) {
+                MONSTER_OFFSETS.iter().for_each(|(dy, dx)| {
+                    self.map[(y as i64 + dy) as usize][(x as i64 + dx) as usize] = 'O'
+                });
             }
         }
     }
@@ -131,7 +129,7 @@ fn flip_x(tile: &MapTile) -> MapTile {
 
     for row in tile.map.iter() {
         let flipped_row = row.iter().rev().copied().collect_vec();
-        flipped.push(flipped_row.to_owned());
+        flipped.push(flipped_row);
     }
 
     MapTile {

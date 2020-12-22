@@ -1,7 +1,8 @@
-use crate::iterator_ext::IteratorExt;
+use std::collections::HashMap;
 
 use aoc_runner_derive::{aoc, aoc_generator};
-use std::collections::HashMap;
+
+use crate::iterator_ext::IteratorExt;
 
 pub struct Group {
     answers: HashMap<char, usize>,

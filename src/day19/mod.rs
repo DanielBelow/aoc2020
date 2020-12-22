@@ -1,8 +1,8 @@
-use crate::iterator_ext::IteratorExt;
-
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use regex::Regex;
+
+use crate::iterator_ext::IteratorExt;
 
 #[derive(Clone, Debug)]
 pub enum Production {
@@ -27,6 +27,12 @@ pub struct Messages {
 pub fn generate(inp: &str) -> Option<Messages> {
     let mut spl = inp.split("\n\n");
 
+    let parse_prod = |e: &str| -> Vec<usize> {
+        e.split(' ')
+            .filter_map(|it| it.parse::<usize>().ok())
+            .collect()
+    };
+
     let rules = spl.next()?;
     let rules = rules
         .lines()
@@ -38,16 +44,8 @@ pub fn generate(inp: &str) -> Option<Messages> {
             let production = if prods.contains('|') {
                 // OR
                 let mut psplt = prods.split('|');
-                let lhs = psplt.next()?;
-                let lhs = lhs
-                    .split(' ')
-                    .filter_map(|it| it.parse::<usize>().ok())
-                    .collect_vec();
-                let rhs = psplt.next()?;
-                let rhs = rhs
-                    .split(' ')
-                    .filter_map(|it| it.parse::<usize>().ok())
-                    .collect_vec();
+                let lhs = parse_prod(psplt.next()?);
+                let rhs = parse_prod(psplt.next()?);
                 Production::Or((lhs, rhs))
             } else if prods.contains('"') {
                 // TERM
@@ -55,10 +53,7 @@ pub fn generate(inp: &str) -> Option<Messages> {
                 Production::Terminal(chr)
             } else {
                 // COMPOUND
-                let comp = prods
-                    .split(' ')
-                    .filter_map(|it| it.parse::<usize>().ok())
-                    .collect_vec();
+                let comp = parse_prod(prods);
                 Production::Compound(comp)
             };
 
@@ -123,29 +118,23 @@ fn to_regex(idx: usize, rules: &[Rule], p2: bool) -> Option<String> {
 
     let rule = rules.iter().find(|it| it.idx == idx)?;
 
+    let expr_to_regex =
+        |e: &Vec<usize>| -> String { e.iter().filter_map(|it| to_regex(*it, rules, p2)).join("") };
+
     let mut res = String::new();
-    match &rule.grule {
+    let re = match &rule.grule {
         Production::Terminal(c) => {
-            let re = format!("[{}]", c);
-            res.push_str(re.as_str());
+            format!("[{}]", c)
         }
-        Production::Compound(v) => {
-            let v = v.iter().filter_map(|it| to_regex(*it, rules, p2)).join("");
-            res.push_str(v.as_str());
-        }
+        Production::Compound(v) => expr_to_regex(v),
         Production::Or((lhs, rhs)) => {
-            let lhs = lhs
-                .iter()
-                .filter_map(|it| to_regex(*it, rules, p2))
-                .join("");
-            let rhs = rhs
-                .iter()
-                .filter_map(|it| to_regex(*it, rules, p2))
-                .join("");
-            let re = format!("({}|{})", lhs, rhs);
-            res.push_str(re.as_str());
+            let lhs = expr_to_regex(lhs);
+            let rhs = expr_to_regex(rhs);
+            format!("({}|{})", lhs, rhs)
         }
-    }
+    };
+
+    res.push_str(re.as_str());
 
     Some(res)
 }

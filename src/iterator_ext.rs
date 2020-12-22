@@ -1,3 +1,5 @@
+use std::ops::Add;
+
 pub trait IteratorExt {
     type Elem;
 
@@ -6,10 +8,15 @@ pub trait IteratorExt {
         Self: Sized,
         P: FnMut(Self::Elem) -> bool;
 
+    fn none<P>(self, predicate: P) -> bool
+    where
+        Self: Sized,
+        P: FnMut(Self::Elem) -> bool;
+
     fn sum_by<F, K>(self, key: F) -> K
     where
         Self: Sized,
-        K: std::iter::Sum,
+        K: Add<Output = K> + Default,
         F: FnMut(Self::Elem) -> K;
 }
 
@@ -28,12 +35,22 @@ where
         self.fold(0, |acc, it| if predicate(it) { acc + 1 } else { acc })
     }
 
-    fn sum_by<F, K>(self, key: F) -> K
+    #[inline]
+    fn none<P>(mut self, predicate: P) -> bool
     where
         Self: Sized,
-        K: std::iter::Sum,
+        P: FnMut(Self::Elem) -> bool,
+    {
+        !self.any(predicate)
+    }
+
+    #[inline]
+    fn sum_by<F, K>(self, mut key: F) -> K
+    where
+        Self: Sized,
+        K: Add<Output = K> + Default,
         F: FnMut(Self::Elem) -> K,
     {
-        self.map(key).sum()
+        self.fold(K::default(), |acc, it| acc + key(it))
     }
 }

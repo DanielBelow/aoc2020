@@ -1,11 +1,12 @@
-use crate::iterator_ext::IteratorExt;
+use std::collections::HashSet;
 
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use lazy_static::lazy_static;
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 use regex::Regex;
-use std::collections::HashSet;
+
+use crate::iterator_ext::IteratorExt;
 
 lazy_static! {
     static ref HAIR_RE: Regex = Regex::new(r"^#[0-9a-f]{6}$").unwrap();
@@ -83,11 +84,11 @@ fn has_required_fields(pd: &HashSet<PassportEntry>) -> bool {
         return true;
     }
 
-    let has_country_id = pd
+    let no_country_id = pd
         .iter()
-        .any(|it| matches!(it, PassportEntry::CountryID(_)));
+        .none(|it| matches!(it, PassportEntry::CountryID(_)));
 
-    !has_country_id && num_fields == 7
+    no_country_id && num_fields == 7
 }
 
 #[aoc(day4, part1)]
