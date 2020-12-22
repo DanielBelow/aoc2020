@@ -1,6 +1,8 @@
 use crate::iterator_ext::IteratorExt;
 use aoc_runner_derive::{aoc, aoc_generator};
+use std::collections::hash_map::DefaultHasher;
 use std::collections::{HashSet, VecDeque};
+use std::hash::{Hash, Hasher};
 
 #[derive(PartialEq, Eq, Hash, Clone)]
 pub struct Game {
@@ -10,15 +12,24 @@ pub struct Game {
 
 impl Game {
     fn with_cards(
-        player: &VecDeque<usize>,
+        old_player: &VecDeque<usize>,
         p_num: usize,
-        ferris: &VecDeque<usize>,
+        old_ferris: &VecDeque<usize>,
         f_num: usize,
     ) -> Self {
-        Self {
-            player: player.iter().take(p_num).copied().collect(),
-            ferris: ferris.iter().take(f_num).copied().collect(),
-        }
+        let mut player = old_player.clone();
+        player.truncate(p_num);
+
+        let mut ferris = old_ferris.clone();
+        ferris.truncate(f_num);
+
+        Self { player, ferris }
+    }
+
+    fn calc_hash(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        self.hash(&mut hasher);
+        hasher.finish()
     }
 
     fn player_won(&self) -> bool {
@@ -40,7 +51,7 @@ impl Game {
             .iter()
             .rev()
             .enumerate()
-            .sum_by(|(idx, it)| (idx + 1) * *it)
+            .sum_by(|(idx, it)| (idx + 1) * it)
     }
 }
 
@@ -78,7 +89,11 @@ fn play_recursive_combat(game: &mut Game) {
     let mut cache = HashSet::new();
 
     while !game.player.is_empty() && !game.ferris.is_empty() {
-        cache.insert(game.clone());
+        let hash = game.calc_hash();
+        if !cache.insert(hash) {
+            game.ferris.clear();
+            return;
+        }
 
         let p_first = game.player.pop_front().expect("Shouldn't be empty!");
         let f_first = game.ferris.pop_front().expect("Shouldn't be empty!");
@@ -95,11 +110,6 @@ fn play_recursive_combat(game: &mut Game) {
             game.player.extend([p_first, f_first].iter());
         } else {
             game.ferris.extend([f_first, p_first].iter());
-        }
-
-        if cache.contains(game) {
-            game.ferris.clear();
-            return;
         }
     }
 }
