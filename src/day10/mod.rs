@@ -3,13 +3,11 @@ use std::collections::HashMap;
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 
-use crate::iterator_ext::IteratorExt;
-
 #[aoc_generator(day10)]
 pub fn generate(inp: &str) -> Vec<i64> {
     let mut nums = inp
         .lines()
-        .filter_map(|it| it.parse().map_err(|e| println!("Error: {}", e)).ok())
+        .filter_map(|it| it.parse().map_err(|e| println!("Error: {e}")).ok())
         .sorted()
         .collect_vec();
 
@@ -63,7 +61,8 @@ fn count_paths(v: &[i64], idx: usize, cache: &mut HashMap<usize, i64>) -> i64 {
                 None
             }
         })
-        .sum_by(|it| count_paths(v, it, cache));
+        .map(|it| count_paths(v, it, cache))
+        .sum();
 
     cache.insert(idx, num_paths);
 

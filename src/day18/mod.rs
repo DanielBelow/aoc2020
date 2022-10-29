@@ -1,8 +1,6 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
-use crate::iterator_ext::IteratorExt;
-
 #[derive(PDisplay, PFromStr, PartialEq, Copy, Clone, Debug)]
 pub enum MathToken {
     #[display("+")]
@@ -21,12 +19,12 @@ pub enum MathToken {
 pub fn generate(inp: &str) -> Vec<Vec<MathToken>> {
     inp.lines()
         .map(|it| {
-            it.replace("(", "( ")
-                .replace(")", " )")
+            it.replace('(', "( ")
+                .replace(')', " )")
                 .split(' ')
                 .filter_map(|t| {
                     t.parse::<MathToken>()
-                        .map_err(|e| println!("Error: {}", e))
+                        .map_err(|e| println!("Error: {e}"))
                         .ok()
                 })
                 .collect()
@@ -62,7 +60,7 @@ fn simplify_parens(tokens: &[MathToken]) -> (bool, Vec<MathToken>) {
             break;
         }
 
-        if let Some(replace) = replace_simple_parens(idx, &tokens) {
+        if let Some(replace) = replace_simple_parens(idx, tokens) {
             res.push(replace);
             idx += 3;
             simplified = true;
@@ -89,15 +87,15 @@ fn simplify_left_to_right(tokens: &[MathToken]) -> (bool, Vec<MathToken>) {
             break;
         }
 
-        if let Some(replace) = replace_simple_arith(idx, &tokens) {
+        if let Some(replace) = replace_simple_arith(idx, tokens) {
             res.push(replace);
             simplified = true;
             idx += 3;
             break;
-        } else {
-            res.push(tokens[idx]);
-            idx += 1;
         }
+
+        res.push(tokens[idx]);
+        idx += 1;
     }
 
     for tok in &tokens[idx..] {
@@ -221,12 +219,12 @@ fn simplify_with_precedence(toks: &[MathToken]) -> usize {
 
 #[aoc(day18, part1)]
 pub fn part1(toks: &[Vec<MathToken>]) -> usize {
-    toks.iter().sum_by(|it| simplify(it))
+    toks.iter().map(|it| simplify(it)).sum()
 }
 
 #[aoc(day18, part2)]
 pub fn part2(toks: &[Vec<MathToken>]) -> usize {
-    toks.iter().sum_by(|it| simplify_with_precedence(it))
+    toks.iter().map(|it| simplify_with_precedence(it)).sum()
 }
 
 #[cfg(test)]
@@ -324,7 +322,7 @@ mod tests {
     fn test_part2_3() {
         let inp = "5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))";
         let toks = generate(inp);
-        assert_eq!(669060, part2(&toks));
+        assert_eq!(669_060, part2(&toks));
     }
 
     #[test]
@@ -338,13 +336,13 @@ mod tests {
     fn test_part2_5() {
         let inp = "5 * 9 * (7 * 3 * 3 + 9 * (8 + 6 * 4) + 3)";
         let toks = generate(inp);
-        assert_eq!(669060, part2(&toks));
+        assert_eq!(669_060, part2(&toks));
     }
 
     #[test]
     fn test_foo() {
         let inp ="7 + 3 * (9 * (4 + 9 + 6 + 2) + (5 + 9 * 8 + 6 * 5) * 6 * 8 * (3 + 9 * 8 + 8 + 5)) * 3 + 4 * 6";
         let toks = generate(inp);
-        assert_eq!(45768602880, part2(&toks));
+        assert_eq!(45_768_602_880, part2(&toks));
     }
 }

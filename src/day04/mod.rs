@@ -6,8 +6,6 @@ use lazy_static::lazy_static;
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 use regex::Regex;
 
-use crate::iterator_ext::IteratorExt;
-
 lazy_static! {
     static ref HAIR_RE: Regex = Regex::new(r"^#[0-9a-f]{6}$").unwrap();
     static ref PID_RE: Regex = Regex::new(r"^[0-9]{9}$").unwrap();
@@ -51,13 +49,13 @@ pub enum PassportEntry {
 }
 
 fn remove_whitespace(s: &str) -> String {
-    let rem_linebreaks = s.replace("\n", " ");
+    let rem_linebreaks = s.replace('\n', " ");
     WS_RE.replace_all(rem_linebreaks.trim(), " ").to_string()
 }
 
 pub fn parse_passport_entry(line: &str) -> Option<PassportEntry> {
     line.parse::<PassportEntry>()
-        .map_err(|e| println!("Error: {}", e))
+        .map_err(|e| println!("Error: {e}"))
         .ok()
 }
 
@@ -84,16 +82,16 @@ fn has_required_fields(pd: &HashSet<PassportEntry>) -> bool {
         return true;
     }
 
-    let no_country_id = pd
+    let no_country_id = !pd
         .iter()
-        .none(|it| matches!(it, PassportEntry::CountryID(_)));
+        .any(|it| matches!(it, PassportEntry::CountryID(_)));
 
     no_country_id && num_fields == 7
 }
 
 #[aoc(day4, part1)]
 pub fn part1(pd: &[HashSet<PassportEntry>]) -> usize {
-    pd.iter().count_if(has_required_fields)
+    pd.iter().filter(|it| has_required_fields(it)).count()
 }
 
 fn validate_range(low: usize, high: usize, value: usize) -> bool {
@@ -104,11 +102,10 @@ fn validate_height(height: &str) -> bool {
     height
         .parse::<HeightUnit>()
         .ok()
-        .map(|it| match it {
+        .map_or(false, |it| match it {
             HeightUnit::Centimeter(num) => validate_range(150, 193, num),
             HeightUnit::Inch(num) => validate_range(59, 76, num),
         })
-        .unwrap_or(false)
 }
 
 fn is_valid(pd: &HashSet<PassportEntry>) -> bool {
@@ -118,10 +115,10 @@ fn is_valid(pd: &HashSet<PassportEntry>) -> bool {
         PassportEntry::BirthYear(y) => validate_range(1920, 2002, *y),
         PassportEntry::IssueYear(y) => validate_range(2010, 2020, *y),
         PassportEntry::ExpirationYear(y) => validate_range(2020, 2030, *y),
-        PassportEntry::Height(h) => validate_height(&h.as_str()),
+        PassportEntry::Height(h) => validate_height(h.as_str()),
         PassportEntry::HairColor(cl) => HAIR_RE.is_match(cl),
         PassportEntry::EyeColor(cl) => EYE_COLORS.contains(&cl.as_str()),
-        PassportEntry::PassportID(id) => PID_RE.is_match(&id.as_str()),
+        PassportEntry::PassportID(id) => PID_RE.is_match(id.as_str()),
         PassportEntry::CountryID(_) => true,
     })
 }
@@ -129,7 +126,8 @@ fn is_valid(pd: &HashSet<PassportEntry>) -> bool {
 #[aoc(day4, part2)]
 pub fn part2(pd: &[HashSet<PassportEntry>]) -> usize {
     pd.iter()
-        .count_if(|it| has_required_fields(it) && is_valid(it))
+        .filter(|it| has_required_fields(it) && is_valid(it))
+        .count()
 }
 
 #[cfg(test)]

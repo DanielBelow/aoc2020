@@ -4,8 +4,6 @@ use std::hash::{Hash, Hasher};
 
 use aoc_runner_derive::{aoc, aoc_generator};
 
-use crate::iterator_ext::IteratorExt;
-
 #[derive(PartialEq, Eq, Hash, Clone)]
 pub struct Game {
     player: VecDeque<usize>,
@@ -53,7 +51,8 @@ impl Game {
             .iter()
             .rev()
             .enumerate()
-            .sum_by(|(idx, it)| (idx + 1) * it)
+            .map(|(idx, it)| (idx + 1) * it)
+            .sum()
     }
 }
 
@@ -61,7 +60,7 @@ fn parse_card_deck(lines: &str) -> VecDeque<usize> {
     lines
         .lines()
         .skip(1)
-        .filter_map(|it| it.parse().map_err(|e| println!("Error: {}", e)).ok())
+        .filter_map(|it| it.parse().map_err(|e| println!("Error: {e}")).ok())
         .collect()
 }
 

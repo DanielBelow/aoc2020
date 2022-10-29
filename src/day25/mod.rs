@@ -3,12 +3,12 @@ use aoc_runner_derive::{aoc, aoc_generator};
 #[aoc_generator(day25)]
 pub fn generate(inp: &str) -> Vec<usize> {
     inp.lines()
-        .filter_map(|it| it.parse().map_err(|e| println!("Error: {}", e)).ok())
+        .filter_map(|it| it.parse().map_err(|e| println!("Error: {e}")).ok())
         .collect()
 }
 
 fn step(value: usize, subject_num: usize) -> usize {
-    (value * subject_num) % 20201227
+    (value * subject_num) % 20_201_227
 }
 
 fn get_loop_size(target: usize) -> usize {
@@ -56,7 +56,7 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let keys = vec![5764801, 17807724];
-        assert_eq!(14897079, part1(&keys));
+        let keys = vec![5_764_801, 17_807_724];
+        assert_eq!(14_897_079, part1(&keys));
     }
 }

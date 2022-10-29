@@ -4,7 +4,7 @@ use itertools::Itertools;
 #[aoc_generator(day9)]
 pub fn generate(inp: &str) -> Vec<i64> {
     inp.lines()
-        .filter_map(|it| it.parse().map_err(|e| println!("Error: {}", e)).ok())
+        .filter_map(|it| it.parse().map_err(|e| println!("Error: {e}")).ok())
         .collect()
 }
 
@@ -13,12 +13,12 @@ fn contains_sum(num: i64, slice: &[i64]) -> bool {
     let mut high = slice.len() - 1;
 
     while low < high {
-        let sum = slice[low] + slice[high];
-        if sum == num {
+        let elem_sum = slice[low] + slice[high];
+        if elem_sum == num {
             return true;
         }
 
-        if sum > num {
+        if elem_sum > num {
             high -= 1;
         } else {
             low += 1;
@@ -34,10 +34,10 @@ fn find_elem_without_sum(slice: &[i64], preamble_size: usize) -> Option<i64> {
     let mut slice = slice[..preamble_size].to_vec();
     slice.sort_unstable();
 
-    if !contains_sum(*last_num, &slice) {
-        Some(*last_num)
-    } else {
+    if contains_sum(*last_num, &slice) {
         None
+    } else {
+        Some(*last_num)
     }
 }
 

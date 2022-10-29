@@ -6,7 +6,7 @@ struct CrabGame {
 }
 
 impl CrabGame {
-    fn new(nums: Vec<usize>, len: usize) -> Self {
+    fn new(nums: &[usize], len: usize) -> Self {
         let mut v = (1..len + 2).collect_vec();
         v[len] = nums[0];
         let mut indices = nums.windows(2).fold(v, |mut acc, it| {
@@ -92,7 +92,7 @@ pub fn generate(inp: &str) -> Vec<usize> {
 
 #[aoc(day23, part1)]
 pub fn part1(nums: &[usize]) -> Option<usize> {
-    let mut cg = CrabGame::new(nums.to_owned(), nums.len());
+    let mut cg = CrabGame::new(nums, nums.len());
     cg.play_rounds(100, nums[0]);
 
     let res = cg.resolve_indices(1);
@@ -100,12 +100,12 @@ pub fn part1(nums: &[usize]) -> Option<usize> {
 }
 
 #[aoc(day23, part2)]
-pub fn part2(nums: &[usize]) -> Option<usize> {
-    let mut cg = CrabGame::new(nums.to_owned(), 1_000_000);
+pub fn part2(nums: &[usize]) -> usize {
+    let mut cg = CrabGame::new(nums, 1_000_000);
     cg.play_rounds(10_000_000, nums[0]);
 
     let res = cg.resolve_indices(1);
-    Some(res[0] * res[1])
+    res[0] * res[1]
 }
 
 #[cfg(test)]
@@ -117,12 +117,12 @@ mod tests {
     #[test]
     fn test_part1() {
         let nums = generate(INP);
-        assert_eq!(Some(67384529), part1(&nums));
+        assert_eq!(Some(67_384_529), part1(&nums));
     }
 
     #[test]
     fn test_part2() {
         let nums = generate(INP);
-        assert_eq!(Some(149245887792), part2(&nums));
+        assert_eq!(149_245_887_792, part2(&nums));
     }
 }

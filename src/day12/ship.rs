@@ -47,11 +47,11 @@ pub trait Ship {
 }
 
 #[derive(Copy, Clone)]
-pub struct SimpleShip {
+pub struct Simple {
     position: Position,
 }
 
-impl SimpleShip {
+impl Simple {
     pub fn new() -> Self {
         let position = Position {
             dir: Direction::East,
@@ -79,7 +79,7 @@ impl SimpleShip {
     }
 }
 
-impl Ship for SimpleShip {
+impl Ship for Simple {
     fn perform_action(&mut self, action: &NavigationAction) {
         match *action {
             NavigationAction::North(n) => self.position.y_pos += n,
@@ -104,12 +104,13 @@ struct Waypoint {
 }
 
 #[derive(Copy, Clone)]
-pub struct ShipWithWaypoint {
+pub struct WithWaypoint {
     position: Position,
     waypoint: Waypoint,
 }
 
 impl Waypoint {
+    #[allow(clippy::cast_precision_loss)]
     fn rotate(&mut self, degrees: i64, around: &Position) {
         let cur_x = self.x_pos - around.x_pos;
         let cur_y = self.y_pos - around.y_pos;
@@ -127,7 +128,7 @@ impl Waypoint {
     }
 }
 
-impl ShipWithWaypoint {
+impl WithWaypoint {
     pub fn new() -> Self {
         let position = Position {
             dir: Direction::East,
@@ -158,7 +159,7 @@ impl ShipWithWaypoint {
     }
 }
 
-impl Ship for ShipWithWaypoint {
+impl Ship for WithWaypoint {
     fn perform_action(&mut self, action: &NavigationAction) {
         match *action {
             NavigationAction::North(n) => self.waypoint.y_pos += n,

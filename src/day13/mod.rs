@@ -34,6 +34,7 @@ pub fn generate(inp: &str) -> Option<BusSchedule> {
     })
 }
 
+#[allow(clippy::cast_precision_loss)]
 fn find_lowest_gt(target: i64, multiple: i64) -> i64 {
     multiple * (target as f64 / multiple as f64).ceil() as i64
 }
@@ -63,7 +64,7 @@ fn chinese_remainder_theorem(residues: &[i64], modulii: &[i64]) -> Option<i64> {
 
     for (&residue, &modulus) in residues.iter().zip(modulii) {
         let p = prod / modulus;
-        sum += residue * mod_inv(p, modulus)? * p
+        sum += residue * mod_inv(p, modulus)? * p;
     }
 
     Some(sum % prod)

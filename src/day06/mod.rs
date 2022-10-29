@@ -1,8 +1,7 @@
 use std::collections::HashMap;
 
 use aoc_runner_derive::{aoc, aoc_generator};
-
-use crate::iterator_ext::IteratorExt;
+use itertools::Itertools;
 
 pub struct Group {
     answers: HashMap<char, usize>,
@@ -12,12 +11,12 @@ pub struct Group {
 #[aoc_generator(day6)]
 pub fn generate(inp: &str) -> Vec<Group> {
     inp.split("\n\n")
-        .map(|it| to_group(it.lines().collect()))
+        .map(|it| to_group(&it.lines().collect_vec()))
         .collect()
 }
 
-fn to_group(inp: Vec<&str>) -> Group {
-    let answers = get_answers_map(&inp);
+fn to_group(inp: &[&str]) -> Group {
+    let answers = get_answers_map(inp);
     let num_people = inp.len();
     Group {
         answers,
@@ -36,14 +35,15 @@ fn get_answers_map(group_answers: &[&str]) -> HashMap<char, usize> {
 
 #[aoc(day6, part1)]
 pub fn part1(groups: &[Group]) -> usize {
-    groups.iter().sum_by(|it| it.answers.values().count())
+    groups.iter().map(|it| it.answers.values().count()).sum()
 }
 
 #[aoc(day6, part2)]
 pub fn part2(groups: &[Group]) -> usize {
     groups
         .iter()
-        .sum_by(|it| it.answers.values().count_if(|v| *v == it.num_people))
+        .map(|it| it.answers.values().filter(|v| **v == it.num_people).count())
+        .sum()
 }
 
 #[cfg(test)]

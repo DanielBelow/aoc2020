@@ -3,8 +3,6 @@ use std::collections::HashSet;
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::{iproduct, Itertools};
 
-use crate::iterator_ext::IteratorExt;
-
 const GRID_SIZE: usize = 10;
 
 #[derive(Default, Clone, Debug)]
@@ -41,9 +39,9 @@ impl MapTile {
     fn replace_sea_monsters(&mut self) {
         for (y, x) in iproduct!(1..self.map.len() - 1, 0..self.map.len() - 19) {
             if self.is_sea_monster_at(x, y) {
-                MONSTER_OFFSETS.iter().for_each(|(dy, dx)| {
-                    self.map[(y as i64 + dy) as usize][(x as i64 + dx) as usize] = 'O'
-                });
+                for (dy, dx) in MONSTER_OFFSETS.iter() {
+                    self.map[(y as i64 + dy) as usize][(x as i64 + dx) as usize] = 'O';
+                }
             }
         }
     }
@@ -60,21 +58,17 @@ impl MapTile {
         false
     }
 
-    fn is_match(&self, lhs: &[char], rhs: &[char]) -> bool {
+    fn is_match(lhs: &[char], rhs: &[char]) -> bool {
         lhs.len() == rhs.len() && lhs.iter().zip(rhs).all(|(l, r)| *l == *r)
     }
 
     fn matches_bottom(&self, other: &Self) -> bool {
-        self.map
-            .last()
-            .map(|self_last| {
-                other
-                    .map
-                    .first()
-                    .map(|other_first| self.is_match(self_last, other_first))
-                    .unwrap_or(false)
-            })
-            .unwrap_or(false)
+        self.map.last().map_or(false, |self_last| {
+            other
+                .map
+                .first()
+                .map_or(false, |other_first| Self::is_match(self_last, other_first))
+        })
     }
 
     fn matches_right(&self, other: &Self) -> bool {
@@ -90,7 +84,7 @@ impl MapTile {
             .filter_map(|it| it.first().copied())
             .collect_vec();
 
-        self.is_match(&self_right, &other_left)
+        Self::is_match(&self_right, &other_left)
     }
 }
 
@@ -101,7 +95,7 @@ pub fn generate(inp: &str) -> Vec<MapTile> {
         if let Some(title_line) = lines.next() {
             if let Some(id) = title_line
                 .strip_prefix("Tile ")
-                .and_then(|it| it.strip_suffix(":"))
+                .and_then(|it| it.strip_suffix(':'))
                 .and_then(|it| it.parse::<usize>().ok())
             {
                 let mut map = vec![vec!['?'; GRID_SIZE]; GRID_SIZE];
@@ -127,7 +121,7 @@ pub fn generate(inp: &str) -> Vec<MapTile> {
 fn flip_x(tile: &MapTile) -> MapTile {
     let mut flipped = Vec::new();
 
-    for row in tile.map.iter() {
+    for row in &tile.map {
         let flipped_row = row.iter().rev().copied().collect_vec();
         flipped.push(flipped_row);
     }
@@ -144,9 +138,9 @@ fn flips_and_rotations(tile: &MapTile) -> Vec<MapTile> {
     let mut res = Vec::new();
 
     let mut add_rotations = |tile: &MapTile| {
-        res.push(tile.to_owned());
+        res.push(tile.clone());
         {
-            let mut acc = tile.map.to_vec();
+            let mut acc = tile.map.clone();
             for (x, y) in iproduct!(0..dim, 1..=dim) {
                 acc[y - 1][x] = tile.map[dim - y][x];
             }
@@ -158,7 +152,7 @@ fn flips_and_rotations(tile: &MapTile) -> Vec<MapTile> {
             res.push(mt);
         }
         {
-            let mut acc = tile.map.to_vec();
+            let mut acc = tile.map.clone();
             for (x, y) in iproduct!(1..=dim, 1..=dim) {
                 acc[y - 1][x - 1] = tile.map[dim - x][dim - y];
             }
@@ -171,7 +165,7 @@ fn flips_and_rotations(tile: &MapTile) -> Vec<MapTile> {
         }
 
         {
-            let mut acc = tile.map.to_vec();
+            let mut acc = tile.map.clone();
             for (x, y) in iproduct!(1..=dim, 0..dim) {
                 acc[x - 1][y] = tile.map[y][dim - x];
             }
@@ -186,7 +180,7 @@ fn flips_and_rotations(tile: &MapTile) -> Vec<MapTile> {
 
     add_rotations(tile);
 
-    let flipped = flip_x(&tile);
+    let flipped = flip_x(tile);
     add_rotations(&flipped);
 
     res
@@ -213,12 +207,12 @@ fn fill_grid(
         visited.insert(cur_id);
 
         let flips_rots = flips_and_rotations(tile);
-        for fr in flips_rots.iter() {
-            let x_match = x == 0 || grid[y][x - 1].matches_right(&fr);
-            let y_match = y == 0 || grid[y - 1][x].matches_bottom(&fr);
+        for fr in &flips_rots {
+            let x_match = x == 0 || grid[y][x - 1].matches_right(fr);
+            let y_match = y == 0 || grid[y - 1][x].matches_bottom(fr);
 
             if x_match && y_match {
-                grid[y][x] = fr.to_owned();
+                grid[y][x] = fr.clone();
 
                 let next_x = (x + 1) % grid.len();
                 let next_y = if next_x == 0 { y + 1 } else { y };
@@ -244,8 +238,8 @@ fn reconstruct_image(dim: usize, data: &[MapTile]) -> Vec<Vec<MapTile>> {
         visited.insert(cur_id);
 
         let flips_rots = flips_and_rotations(tile);
-        for fr in flips_rots.iter() {
-            grid[0][0] = fr.to_owned();
+        for fr in &flips_rots {
+            grid[0][0] = fr.clone();
             if fill_grid(1, 0, data, &mut visited, &mut grid) {
                 return grid;
             }
@@ -257,7 +251,7 @@ fn reconstruct_image(dim: usize, data: &[MapTile]) -> Vec<Vec<MapTile>> {
     panic!("Wrong starting thingy")
 }
 
-fn merge_without_border(image: Vec<Vec<MapTile>>) -> Vec<Vec<char>> {
+fn merge_without_border(image: &[Vec<MapTile>]) -> Vec<Vec<char>> {
     image.iter().fold(Vec::new(), |mut acc, cur_row| {
         for idx in 1..GRID_SIZE - 1 {
             let tmp = cur_row.iter().fold(Vec::new(), |inner_acc, cur_tile| {
@@ -279,6 +273,7 @@ fn merge_without_border(image: Vec<Vec<MapTile>>) -> Vec<Vec<char>> {
 }
 
 #[aoc(day20, part1)]
+#[allow(clippy::cast_precision_loss)]
 pub fn part1(data: &[MapTile]) -> usize {
     let grid_dim = (data.len() as f64).sqrt() as usize;
     let image = reconstruct_image(grid_dim, data);
@@ -290,11 +285,12 @@ pub fn part1(data: &[MapTile]) -> usize {
 }
 
 #[aoc(day20, part2)]
+#[allow(clippy::cast_precision_loss)]
 pub fn part2(data: &[MapTile]) -> Option<usize> {
     let grid_dim = (data.len() as f64).sqrt() as usize;
     let image = reconstruct_image(grid_dim, data);
 
-    let merged = merge_without_border(image);
+    let merged = merge_without_border(&image);
 
     let combined_tile = MapTile { id: 0, map: merged };
 
@@ -305,7 +301,8 @@ pub fn part2(data: &[MapTile]) -> Option<usize> {
     let water_roughness = with_monsters
         .map
         .iter()
-        .sum_by(|it| it.iter().count_if(|c| *c == '#'));
+        .map(|it| it.iter().filter(|c| **c == '#').count())
+        .sum();
     Some(water_roughness)
 }
 
@@ -424,7 +421,7 @@ Tile 3079:
     #[test]
     fn test_part1() {
         let data = generate(INP);
-        assert_eq!(20899048083289, part1(&data));
+        assert_eq!(20_899_048_083_289, part1(&data));
     }
 
     #[test]

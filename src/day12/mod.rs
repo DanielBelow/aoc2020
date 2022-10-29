@@ -1,13 +1,13 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
-use ship::{NavigationAction, Ship, ShipWithWaypoint, SimpleShip};
+use ship::{NavigationAction, Ship, Simple, WithWaypoint};
 
 mod ship;
 
 #[aoc_generator(day12)]
 pub fn generate(inp: &str) -> Vec<NavigationAction> {
     inp.lines()
-        .filter_map(|it| it.parse().map_err(|e| println!("Error: {}", e)).ok())
+        .filter_map(|it| it.parse().map_err(|e| println!("Error: {e}")).ok())
         .collect()
 }
 
@@ -21,12 +21,12 @@ where
 
 #[aoc(day12, part1)]
 pub fn part1(v: &[NavigationAction]) -> i64 {
-    run_actions(v, &mut SimpleShip::new())
+    run_actions(v, &mut Simple::new())
 }
 
 #[aoc(day12, part2)]
 pub fn part2(v: &[NavigationAction]) -> i64 {
-    run_actions(v, &mut ShipWithWaypoint::new())
+    run_actions(v, &mut WithWaypoint::new())
 }
 
 #[cfg(test)]

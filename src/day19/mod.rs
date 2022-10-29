@@ -2,8 +2,6 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use regex::Regex;
 
-use crate::iterator_ext::IteratorExt;
-
 #[derive(Clone, Debug)]
 pub enum Production {
     Terminal(char),
@@ -75,10 +73,7 @@ pub fn generate(inp: &str) -> Option<Messages> {
 fn to_regex(idx: usize, rules: &[Rule], p2: bool) -> Option<String> {
     if p2 {
         if idx == 8 {
-            return match to_regex(42, rules, p2) {
-                Some(rgx) => Some(format!("{}+", rgx)),
-                _ => None,
-            };
+            return to_regex(42, rules, p2).map(|rgx| format!("{rgx}+"));
         } else if idx == 11 {
             return to_regex(42, rules, p2).and_then(|fourty_two| {
                 to_regex(31, rules, p2)
@@ -124,13 +119,13 @@ fn to_regex(idx: usize, rules: &[Rule], p2: bool) -> Option<String> {
     let mut res = String::new();
     let re = match &rule.grule {
         Production::Terminal(c) => {
-            format!("[{}]", c)
+            format!("[{c}]")
         }
         Production::Compound(v) => expr_to_regex(v),
         Production::Or((lhs, rhs)) => {
             let lhs = expr_to_regex(lhs);
             let rhs = expr_to_regex(rhs);
-            format!("({}|{})", lhs, rhs)
+            format!("({lhs}|{rhs})")
         }
     };
 
@@ -142,7 +137,7 @@ fn to_regex(idx: usize, rules: &[Rule], p2: bool) -> Option<String> {
 fn rules_to_regex(rules: &[Rule], p2: bool) -> Option<Regex> {
     match to_regex(0, rules, p2) {
         Some(rgx) => {
-            let re = format!("^{}$", rgx);
+            let re = format!("^{rgx}$");
             Regex::new(re.as_str()).ok()
         }
         _ => None,
@@ -150,23 +145,17 @@ fn rules_to_regex(rules: &[Rule], p2: bool) -> Option<Regex> {
 }
 
 fn count_matches(msgs: &[String], re: &Regex) -> usize {
-    msgs.iter().count_if(|it| re.is_match(it))
+    msgs.iter().filter(|it| re.is_match(it)).count()
 }
 
 #[aoc(day19, part1)]
 pub fn part1(data: &Messages) -> Option<usize> {
-    match rules_to_regex(&data.rules, false) {
-        Some(re) => Some(count_matches(&data.text, &re)),
-        _ => None,
-    }
+    rules_to_regex(&data.rules, false).map(|re| count_matches(&data.text, &re))
 }
 
 #[aoc(day19, part2)]
 pub fn part2(data: &Messages) -> Option<usize> {
-    match rules_to_regex(&data.rules, true) {
-        Some(re) => Some(count_matches(&data.text, &re)),
-        _ => None,
-    }
+    rules_to_regex(&data.rules, true).map(|re| count_matches(&data.text, &re))
 }
 
 #[cfg(test)]

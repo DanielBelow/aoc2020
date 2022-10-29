@@ -1,10 +1,7 @@
 use std::collections::{HashMap, HashSet};
-use std::iter::FromIterator;
 
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
-
-use crate::iterator_ext::IteratorExt;
 
 pub struct IngredientList {
     ingredients: Vec<String>,
@@ -38,8 +35,8 @@ pub fn generate(inp: &str) -> Vec<IngredientList> {
 
 fn get_allergen_map(data: &[IngredientList]) -> HashMap<String, HashSet<String>> {
     data.iter().fold(HashMap::new(), |mut acc, it| {
-        let ingredients = HashSet::from_iter(it.ingredients.iter().cloned());
-        for all in it.allergens.iter() {
+        let ingredients = it.ingredients.iter().cloned().collect::<HashSet<_>>();
+        for all in &it.allergens {
             acc.entry(all.to_string())
                 .and_modify(|it| *it = it.intersection(&ingredients).cloned().collect())
                 .or_insert_with(|| ingredients.clone());
@@ -56,17 +53,20 @@ pub fn part1(data: &[IngredientList]) -> usize {
         data.iter()
             .flat_map(|it| it.ingredients.clone())
             .fold(HashSet::new(), |mut acc, it| {
-                if allergen_map.values().none(|f| f.contains(&it)) {
+                if !allergen_map.values().any(|f| f.contains(&it)) {
                     acc.insert(it);
                 }
                 acc
             });
 
-    data.iter().sum_by(|it| {
-        it.ingredients
-            .iter()
-            .count_if(|it| safe_ingredients.contains(it))
-    })
+    data.iter()
+        .map(|it| {
+            it.ingredients
+                .iter()
+                .filter(|it| safe_ingredients.contains(*it))
+                .count()
+        })
+        .sum()
 }
 
 fn find_single_ingredients(
@@ -80,26 +80,26 @@ fn find_single_ingredients(
             .filter_map(|(k, v)| {
                 v.iter()
                     .exactly_one()
-                    .map(|it| (k.to_owned(), it.to_owned()))
+                    .map(|it| (k.clone(), it.clone()))
                     .ok()
             })
             .collect();
         res.append(&mut elems);
 
-        res.iter().for_each(|(k, _)| {
+        for (k, _) in &res {
             all_map.remove(k);
-        });
+        }
 
-        all_map.values_mut().for_each(|it| {
+        for it in all_map.values_mut() {
             let ings = res.iter().map(|(_, v)| v).cloned().collect();
             *it = it.difference(&ings).cloned().collect();
-        })
+        }
     }
 
     res
 }
 
-fn join_ingredients_by_allergen(all_ing_pairs: Vec<(String, String)>) -> String {
+fn join_ingredients_by_allergen(all_ing_pairs: &[(String, String)]) -> String {
     all_ing_pairs
         .iter()
         .sorted_by_key(|(k, _)| k)
@@ -111,7 +111,7 @@ fn join_ingredients_by_allergen(all_ing_pairs: Vec<(String, String)>) -> String 
 pub fn part2(data: &[IngredientList]) -> String {
     let mut allergen_map = get_allergen_map(data);
     let allergen_ingredient_pairs = find_single_ingredients(&mut allergen_map);
-    join_ingredients_by_allergen(allergen_ingredient_pairs)
+    join_ingredients_by_allergen(&allergen_ingredient_pairs)
 }
 
 #[cfg(test)]

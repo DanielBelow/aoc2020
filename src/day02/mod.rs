@@ -1,8 +1,6 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
-use crate::iterator_ext::IteratorExt;
-
 #[derive(PDisplay, PFromStr)]
 #[display("{min}-{max} {chr}")]
 pub struct PasswordPolicy {
@@ -20,7 +18,7 @@ pub struct PasswordData {
 
 impl PasswordPolicy {
     pub fn matches_p1(&self, password: &str) -> bool {
-        let num_chars = password.chars().count_if(|it| it == self.chr);
+        let num_chars = password.chars().filter(|it| *it == self.chr).count();
         (self.min..=self.max).contains(&num_chars)
     }
 
@@ -38,18 +36,22 @@ impl PasswordPolicy {
 #[aoc_generator(day2)]
 pub fn generate(inp: &str) -> Vec<PasswordData> {
     inp.lines()
-        .filter_map(|it| it.parse().map_err(|e| println!("Error: {}", e)).ok())
+        .filter_map(|it| it.parse().map_err(|e| println!("Error: {e}")).ok())
         .collect()
 }
 
 #[aoc(day2, part1)]
 pub fn part1(v: &[PasswordData]) -> usize {
-    v.iter().count_if(|it| it.policy.matches_p1(&it.password))
+    v.iter()
+        .filter(|it| it.policy.matches_p1(&it.password))
+        .count()
 }
 
 #[aoc(day2, part2)]
 pub fn part2(v: &[PasswordData]) -> usize {
-    v.iter().count_if(|it| it.policy.matches_p2(&it.password))
+    v.iter()
+        .filter(|it| it.policy.matches_p2(&it.password))
+        .count()
 }
 
 #[cfg(test)]

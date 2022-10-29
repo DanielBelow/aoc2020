@@ -10,13 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Build
-        run: cargo build --verbose
+      - name: Test
+        run: cargo test --release --verbose
       - name: rustfmt
         run: cargo fmt -- --check
       - name: clippy
         run: cargo clippy -- -Dwarnings
-      - name: Test
-        run: cargo test --verbose

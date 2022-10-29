@@ -7,21 +7,13 @@ use itertools::Itertools;
 pub fn generate(inp: &str) -> Vec<usize> {
     inp.lines()
         .map(String::from)
-        .filter_map(|it| {
-            get_seat_id(&it)
-                .map_err(|it| println!("Error: {}", it))
-                .ok()
-        })
+        .filter_map(|it| get_seat_id(&it).map_err(|it| println!("Error: {it}")).ok())
         .sorted()
         .collect()
 }
 
 fn find_in_range(inp: &str) -> Result<usize, ParseIntError> {
-    let inp = inp
-        .replace('F', "0")
-        .replace('L', "0")
-        .replace('B', "1")
-        .replace('R', "1");
+    let inp = inp.replace(['F', 'L'], "0").replace(['B', 'R'], "1");
 
     usize::from_str_radix(&inp, 2)
 }

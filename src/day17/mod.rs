@@ -1,7 +1,7 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 use map_data::{
-    run_simulation_steps_3d, run_simulation_steps_4d, MapData3d, MapData4d, SimulationContext,
+    run_simulation_steps_3d, run_simulation_steps_4d, Data3d, Data4d, SimulationContext,
 };
 
 mod map_data;
@@ -12,7 +12,7 @@ const NUM_ITER: usize = 6;
 const DIMENSION: usize = (8 + NUM_ITER) * 2;
 
 #[aoc_generator(day17, part1)]
-pub fn generate_p1(inp: &str) -> MapData3d {
+pub fn generate_p1(inp: &str) -> Data3d {
     let midway_pt = DIMENSION / 2;
 
     let mut elements = vec![vec![vec![false; DIMENSION]; DIMENSION]; DIMENSION];
@@ -23,11 +23,11 @@ pub fn generate_p1(inp: &str) -> MapData3d {
         }
     }
 
-    MapData3d::new(DIMENSION, elements)
+    Data3d::new(DIMENSION, elements)
 }
 
 #[aoc_generator(day17, part2)]
-pub fn generate_p2(inp: &str) -> MapData4d {
+pub fn generate_p2(inp: &str) -> Data4d {
     let midway_pt = DIMENSION / 2;
 
     let mut elements = vec![vec![vec![vec![false; DIMENSION]; DIMENSION]; DIMENSION]; DIMENSION];
@@ -38,17 +38,17 @@ pub fn generate_p2(inp: &str) -> MapData4d {
         }
     }
 
-    MapData4d::new(DIMENSION, elements)
+    Data4d::new(DIMENSION, elements)
 }
 
 #[aoc(day17, part1)]
-pub fn part1(md: &MapData3d) -> usize {
+pub fn part1(md: &Data3d) -> usize {
     let context = SimulationContext::new(NUM_ITER);
     run_simulation_steps_3d(md, &context)
 }
 
 #[aoc(day17, part2)]
-pub fn part2(md: &MapData4d) -> usize {
+pub fn part2(md: &Data4d) -> usize {
     let context = SimulationContext::new(NUM_ITER);
     run_simulation_steps_4d(md, &context)
 }

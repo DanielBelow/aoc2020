@@ -2,8 +2,6 @@ use std::collections::HashMap;
 
 use itertools::iproduct;
 
-use crate::iterator_ext::IteratorExt;
-
 pub struct SimulationContext {
     single_step: bool,
     crowd_limit: usize,
@@ -72,10 +70,13 @@ impl MapData {
             (1, 1),
         ];
 
-        DIRECTIONS.iter().sum_by(|(rd, cd)| {
-            self.count_occupied_seats(row, col, *rd, *cd, single_step)
-                .unwrap_or(0)
-        })
+        DIRECTIONS
+            .iter()
+            .map(|(rd, cd)| {
+                self.count_occupied_seats(row, col, *rd, *cd, single_step)
+                    .unwrap_or(0)
+            })
+            .sum()
     }
 
     fn count_occupied_seats(
@@ -99,7 +100,7 @@ impl MapData {
             match *cur_seat {
                 MapTile::Occupied => return Some(1),
                 MapTile::Empty => return None,
-                _ => {}
+                MapTile::Floor => {}
             };
 
             if single_step {
@@ -114,7 +115,8 @@ impl MapData {
     pub fn count_occupied(&self) -> usize {
         self.elements
             .iter()
-            .count_if(|(_, seat)| *seat == MapTile::Occupied)
+            .filter(|(_, seat)| **seat == MapTile::Occupied)
+            .count()
     }
 
     pub fn new(width: usize, height: usize, elements: MapElements) -> Self {

@@ -3,8 +3,6 @@ use std::collections::HashMap;
 use aoc_runner_derive::{aoc, aoc_generator};
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
-use crate::iterator_ext::IteratorExt;
-
 #[derive(PDisplay, PFromStr)]
 #[display("mask = {mask}")]
 pub struct Mask {
@@ -48,14 +46,14 @@ pub fn generate(inp: &str) -> Vec<Initialization> {
 
 type Ram = HashMap<i64, u64>;
 
-fn apply_value_bitmask(inp: String, mask: &str) -> String {
+fn apply_value_bitmask(inp: &str, mask: &str) -> String {
     inp.chars()
         .zip(mask.chars())
         .map(|(l, r)| if r == 'X' { l } else { r })
         .collect()
 }
 
-fn apply_index_bitmask(inp: String, mask: &str) -> String {
+fn apply_index_bitmask(inp: &str, mask: &str) -> String {
     inp.chars()
         .zip(mask.chars())
         .map(|(l, r)| match r {
@@ -69,7 +67,7 @@ fn init_memory(init: &Initialization, memory: &mut Ram) {
     let mask = &init.mask.mask;
 
     init.accesses.iter().fold(memory, |acc, it| {
-        let new_val = apply_value_bitmask(format!("{:036b}", it.value), mask);
+        let new_val = apply_value_bitmask(&format!("{:036b}", it.value), mask);
         if let Ok(new_val) = u64::from_str_radix(&new_val, 2) {
             acc.insert(it.index, new_val);
         }
@@ -79,7 +77,7 @@ fn init_memory(init: &Initialization, memory: &mut Ram) {
 }
 
 fn to_padded_binary_string(inp: usize, padding: usize) -> String {
-    format!("{:0>1$b}", inp, padding)
+    format!("{inp:0>padding$b}")
 }
 
 fn generate_floating_combinations(num_floating: usize) -> Vec<String> {
@@ -91,10 +89,10 @@ fn generate_floating_combinations(num_floating: usize) -> Vec<String> {
 fn init_memory_v2(init: &Initialization, memory: &mut Ram) {
     let mask = &init.mask.mask;
 
-    for acc in init.accesses.iter() {
-        let new_index = apply_index_bitmask(format!("{:036b}", acc.index), mask);
+    for acc in &init.accesses {
+        let new_index = apply_index_bitmask(&format!("{:036b}", acc.index), mask);
 
-        let num_floating = new_index.chars().count_if(|it| it == 'X');
+        let num_floating = new_index.chars().filter(|it| *it == 'X').count();
         let combinations = generate_floating_combinations(num_floating);
 
         for comb in combinations {
@@ -110,7 +108,7 @@ fn init_memory_v2(init: &Initialization, memory: &mut Ram) {
                 .collect::<String>();
 
             if let Ok(idx) = i64::from_str_radix(&new_str, 2) {
-                memory.insert(idx, acc.value as u64);
+                memory.insert(idx, acc.value);
             }
         }
     }
@@ -122,7 +120,7 @@ fn run_initialization(
     init_func: impl Fn(&Initialization, &mut Ram),
 ) -> u64 {
     init_sequence.iter().for_each(|it| init_func(it, memory));
-    memory.iter().sum_by(|(_, val)| *val)
+    memory.iter().map(|(_, val)| *val).sum()
 }
 
 #[aoc(day14, part1)]

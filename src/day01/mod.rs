@@ -4,7 +4,7 @@ use itertools::Itertools;
 #[aoc_generator(day1)]
 pub fn generate(inp: &str) -> Vec<u64> {
     inp.lines()
-        .filter_map(|it| it.parse().map_err(|e| println!("Error: {}", e)).ok())
+        .filter_map(|it| it.parse().map_err(|e| println!("Error: {e}")).ok())
         .sorted()
         .collect()
 }
@@ -18,12 +18,12 @@ fn find_product(num: u64, v: &[u64]) -> Option<u64> {
     let mut high = v.len() - 1;
 
     while low < high {
-        let sum = v[low] + v[high];
-        if sum == num {
+        let elem_sum = v[low] + v[high];
+        if elem_sum == num {
             return Some(v[low] * v[high]);
         }
 
-        if sum > num {
+        if elem_sum > num {
             high -= 1;
         } else {
             low += 1;
@@ -69,7 +69,7 @@ mod tests {
     fn test_sample() {
         let inp = vec![1721, 979, 366, 299, 675, 1456];
 
-        assert_eq!(Some(514579), part1(&inp));
-        assert_eq!(Some(241861950), part2(&inp));
+        assert_eq!(Some(514_579), part1(&inp));
+        assert_eq!(Some(241_861_950), part2(&inp));
     }
 }

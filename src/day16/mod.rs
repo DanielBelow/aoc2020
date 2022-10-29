@@ -2,8 +2,6 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
-use crate::iterator_ext::IteratorExt;
-
 #[derive(PDisplay, PFromStr, PartialEq, Clone)]
 #[display("{from}-{to}")]
 pub struct Rule {
@@ -101,7 +99,7 @@ pub fn part1(v: &TicketData) -> usize {
         .sum()
 }
 
-fn try_remove_single_rule(rule: &FieldRules, remove_from: &mut Vec<Vec<&FieldRules>>) -> bool {
+fn try_remove_single_rule(rule: &FieldRules, remove_from: &mut [Vec<&FieldRules>]) -> bool {
     remove_from
         .iter_mut()
         .filter(|it| it.len() > 1)
@@ -123,9 +121,9 @@ fn find_rule_order(mut rules: Vec<Vec<&FieldRules>>) -> Vec<FieldRules> {
             .copied()
             .collect_vec();
 
-        let no_changes = single_rules
+        let no_changes = !single_rules
             .iter()
-            .none(|rule| try_remove_single_rule(*rule, &mut rules));
+            .any(|rule| try_remove_single_rule(rule, &mut rules));
 
         if no_changes {
             break;

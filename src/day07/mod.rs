@@ -6,8 +6,6 @@ use lazy_static::lazy_static;
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 use regex::Regex;
 
-use crate::iterator_ext::IteratorExt;
-
 lazy_static! {
     static ref CLEAN_BAGS: Regex = Regex::new(r#"(\.|bags|bag)"#).unwrap();
 }
@@ -42,7 +40,7 @@ pub fn generate(inp: &str) -> BagsWithContents {
     inp.lines()
         .map(clean_input_line)
         .fold(HashMap::new(), |mut acc, line| {
-            let split = line.split(',').map(|l| l.trim()).collect_vec();
+            let split = line.split(',').map(str::trim).collect_vec();
 
             let nested_bags = parse_nested_bags(&split);
 
@@ -70,8 +68,7 @@ fn can_hold_shiny_gold(
 
         let res = all_bags
             .get(k)
-            .map(|it| can_hold_shiny_gold(it, all_bags, bag_cache))
-            .unwrap_or(false);
+            .map_or(false, |it| can_hold_shiny_gold(it, all_bags, bag_cache));
 
         bag_cache.insert(k.to_string(), res);
 
@@ -83,15 +80,15 @@ fn can_hold_shiny_gold(
 pub fn part1(bags: &BagsWithContents) -> usize {
     let mut bag_cache = HashMap::new();
     bags.values()
-        .count_if(|it| can_hold_shiny_gold(it, bags, &mut bag_cache))
+        .filter(|it| can_hold_shiny_gold(it, bags, &mut bag_cache))
+        .count()
 }
 
 fn count_nested_bags(bag: &HashMap<String, usize>, all_bags: &BagsWithContents) -> usize {
     bag.iter().fold(0, |acc, (k, v)| {
         let num_nested = all_bags
             .get(k)
-            .map(|it| count_nested_bags(it, all_bags))
-            .unwrap_or(0);
+            .map_or(0, |it| count_nested_bags(it, all_bags));
 
         let total_num_nested = *v * num_nested;
 

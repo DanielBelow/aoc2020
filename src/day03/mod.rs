@@ -2,8 +2,6 @@ use std::collections::HashSet;
 
 use aoc_runner_derive::{aoc, aoc_generator};
 
-use crate::iterator_ext::IteratorExt;
-
 pub struct Map {
     trees: HashSet<(usize, usize)>,
     width: usize,
@@ -18,10 +16,11 @@ impl Map {
         (0..=self.height)
             .step_by(down)
             .enumerate()
-            .count_if(|(idx, y)| {
+            .filter(|&(idx, y)| {
                 let x = (idx * right) % width;
                 trees.contains(&(x, y))
             })
+            .count()
     }
 }
 
@@ -30,7 +29,7 @@ const TREE: char = '#';
 #[aoc_generator(day3)]
 pub fn generate(inp: &str) -> Map {
     let height = inp.lines().count();
-    let width = inp.lines().next().map(|l| l.chars().count()).unwrap_or(0);
+    let width = inp.lines().next().map_or(0, |l| l.chars().count());
 
     let trees = inp
         .lines()

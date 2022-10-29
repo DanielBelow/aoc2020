@@ -1,7 +1,5 @@
 use itertools::iproduct;
 
-use crate::iterator_ext::IteratorExt;
-
 pub struct SimulationContext {
     num_steps: usize,
 }
@@ -16,12 +14,12 @@ type MapElements3D = Vec<Vec<Vec<bool>>>;
 type MapElements4D = Vec<MapElements3D>;
 
 #[derive(Clone)]
-pub struct MapData3d {
+pub struct Data3d {
     dimension: usize,
     elements: MapElements3D,
 }
 
-impl MapData3d {
+impl Data3d {
     pub fn new(dimension: usize, elements: MapElements3D) -> Self {
         Self {
             dimension,
@@ -31,12 +29,12 @@ impl MapData3d {
 }
 
 #[derive(Clone)]
-pub struct MapData4d {
+pub struct Data4d {
     dimension: usize,
     elements: MapElements4D,
 }
 
-impl MapData4d {
+impl Data4d {
     pub fn new(dimension: usize, elements: MapElements4D) -> Self {
         Self {
             dimension,
@@ -56,13 +54,16 @@ fn run_iteration_3d(
     for (x, y, z) in iproduct!(start..end, start..end, start..end) {
         let cur_state = prev_map[x][y][z];
 
-        let alive = delta.iter().count_if(|(dx, dy, dz)| {
-            let x = ((x as i64) + dx) as usize;
-            let y = ((y as i64) + dy) as usize;
-            let z = ((z as i64) + dz) as usize;
+        let alive = delta
+            .iter()
+            .filter(|(dx, dy, dz)| {
+                let x = ((x as i64) + dx) as usize;
+                let y = ((y as i64) + dy) as usize;
+                let z = ((z as i64) + dz) as usize;
 
-            prev_map[x][y][z]
-        });
+                prev_map[x][y][z]
+            })
+            .count();
 
         if cur_state && alive != 2 && alive != 3 {
             next_map_elements[x][y][z] = false;
@@ -85,14 +86,17 @@ fn run_iteration_4d(
     for (x, y, z, w) in iproduct!(start..end, start..end, start..end, start..end) {
         let cur_state = prev_map[x][y][z][w];
 
-        let alive = delta.iter().count_if(|(dx, dy, dz, dw)| {
-            let x = ((x as i64) + dx) as usize;
-            let y = ((y as i64) + dy) as usize;
-            let z = ((z as i64) + dz) as usize;
-            let w = ((w as i64) + dw) as usize;
+        let alive = delta
+            .iter()
+            .filter(|(dx, dy, dz, dw)| {
+                let x = ((x as i64) + dx) as usize;
+                let y = ((y as i64) + dy) as usize;
+                let z = ((z as i64) + dz) as usize;
+                let w = ((w as i64) + dw) as usize;
 
-            prev_map[x][y][z][w]
-        });
+                prev_map[x][y][z][w]
+            })
+            .count();
 
         if cur_state && alive != 2 && alive != 3 {
             next_map_elements[x][y][z][w] = false;
@@ -116,13 +120,13 @@ fn count_alive_cells(elem: &[Vec<Vec<bool>>]) -> usize {
     res
 }
 
-pub fn run_simulation_steps_3d(map_data: &MapData3d, context: &SimulationContext) -> usize {
+pub fn run_simulation_steps_3d(map_data: &Data3d, context: &SimulationContext) -> usize {
     let start = 1;
     let end = map_data.dimension - 2;
 
     let delta = build_delta_3d();
 
-    let mut state = map_data.elements.to_owned();
+    let mut state = map_data.elements.clone();
     for _ in 0..context.num_steps {
         state = run_iteration_3d(&state, start, end, &delta);
     }
@@ -130,18 +134,18 @@ pub fn run_simulation_steps_3d(map_data: &MapData3d, context: &SimulationContext
     count_alive_cells(&state)
 }
 
-pub fn run_simulation_steps_4d(map_data: &MapData4d, context: &SimulationContext) -> usize {
+pub fn run_simulation_steps_4d(map_data: &Data4d, context: &SimulationContext) -> usize {
     let start = 1;
     let end = map_data.dimension - 2;
 
     let delta = build_delta_4d();
 
-    let mut state = map_data.elements.to_owned();
+    let mut state = map_data.elements.clone();
     for _ in 0..context.num_steps {
         state = run_iteration_4d(&state, start, end, &delta);
     }
 
-    state.iter().sum_by(|it| count_alive_cells(it))
+    state.iter().map(|it| count_alive_cells(it)).sum()
 }
 
 fn build_delta_3d() -> Vec<(i64, i64, i64)> {

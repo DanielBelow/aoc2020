@@ -18,7 +18,7 @@ pub enum Instruction {
 #[aoc_generator(day8)]
 pub fn generate(inp: &str) -> Vec<Instruction> {
     inp.lines()
-        .filter_map(|it| it.parse().map_err(|e| println!("Error: {}", e)).ok())
+        .filter_map(|it| it.parse().map_err(|e| println!("Error: {e}")).ok())
         .collect()
 }
 
@@ -79,7 +79,7 @@ fn try_replace_and_run(v: &[Instruction], inst: &Instruction, idx: usize) -> Opt
             let insts = replace_inst(v, idx, Instruction::Jmp(*n));
             Some(execute(&insts))
         }
-        _ => None,
+        Instruction::Acc(_) => None,
     }
 }
 

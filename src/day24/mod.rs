@@ -1,4 +1,3 @@
-use crate::iterator_ext::IteratorExt;
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::iproduct;
 
@@ -14,10 +13,10 @@ pub fn generate(inp: &str) -> Vec<Vec<(i64, i64)>> {
                 let dir = match next {
                     'e' => (-1, 0),
                     'w' => (1, 0),
-                    's' if iter.peek() == Some(&&'e') => (-1, 1),
-                    's' if iter.peek() == Some(&&'w') => (0, 1),
-                    'n' if iter.peek() == Some(&&'w') => (1, -1),
-                    'n' if iter.peek() == Some(&&'e') => (0, -1),
+                    's' if iter.peek() == Some(&'e') => (-1, 1),
+                    's' if iter.peek() == Some(&'w') => (0, 1),
+                    'n' if iter.peek() == Some(&'w') => (1, -1),
+                    'n' if iter.peek() == Some(&'e') => (0, -1),
                     _ => panic!("Invalid char"),
                 };
 
@@ -47,7 +46,7 @@ fn setup_tiles(insts: &[Vec<(i64, i64)>]) -> Vec<Vec<bool>> {
                     (new_x, new_y)
                 });
 
-            acc[pos.0 as usize][pos.1 as usize] = !acc[pos.0 as usize][pos.1 as usize];
+            acc[pos.0][pos.1] = !acc[pos.0][pos.1];
             acc
         })
 }
@@ -58,7 +57,7 @@ pub fn part1(insts: &[Vec<(i64, i64)>]) -> usize {
 
     tiles
         .iter()
-        .fold(0, |acc, it| acc + it.iter().count_if(|v| !*v))
+        .fold(0, |acc, it| acc + it.iter().filter(|v| !**v).count())
 }
 
 fn get_neighbor_indices() -> Vec<(i64, i64)> {
@@ -72,16 +71,19 @@ pub fn part2(insts: &[Vec<(i64, i64)>]) -> usize {
     let mut cur_tiles = setup_tiles(insts);
 
     for _ in 0..100 {
-        let mut next_tiles = cur_tiles.to_owned();
+        let mut next_tiles = cur_tiles.clone();
 
         for (x, y) in iproduct!(1..cur_tiles.len() - 1, 1..cur_tiles.len() - 1) {
             let cur = cur_tiles[x][y];
 
-            let black_neighbors = neighbors.iter().count_if(|(l, r)| {
-                let dx = (x as i64 + l) as usize;
-                let dy = (y as i64 + r) as usize;
-                !cur_tiles[dx][dy]
-            });
+            let black_neighbors = neighbors
+                .iter()
+                .filter(|(l, r)| {
+                    let dx = (x as i64 + l) as usize;
+                    let dy = (y as i64 + r) as usize;
+                    !cur_tiles[dx][dy]
+                })
+                .count();
 
             let next_state = if cur {
                 black_neighbors != 2
@@ -97,7 +99,7 @@ pub fn part2(insts: &[Vec<(i64, i64)>]) -> usize {
 
     cur_tiles
         .iter()
-        .fold(0, |acc, it| acc + it.iter().count_if(|v| !*v))
+        .fold(0, |acc, it| acc + it.iter().filter(|v| !**v).count())
 }
 
 #[cfg(test)]
