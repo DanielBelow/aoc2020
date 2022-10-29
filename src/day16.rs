@@ -2,14 +2,14 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
 
-#[derive(PDisplay, PFromStr, PartialEq, Clone)]
+#[derive(PDisplay, PFromStr, PartialEq, Eq, Clone)]
 #[display("{from}-{to}")]
 pub struct Rule {
     from: usize,
     to: usize,
 }
 
-#[derive(PDisplay, PFromStr, PartialEq, Clone)]
+#[derive(PDisplay, PFromStr, PartialEq, Eq, Clone)]
 #[display("{field}: {rule1} or {rule2}")]
 pub struct FieldRules {
     field: String,
