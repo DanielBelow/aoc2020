@@ -1,21 +1,5 @@
-use num_derive::FromPrimitive;
-use num_traits::FromPrimitive;
+use num_complex::Complex;
 use parse_display::{Display as PDisplay, FromStr as PFromStr};
-
-#[derive(Copy, Clone, FromPrimitive)]
-pub enum Direction {
-    North = 0,
-    East,
-    South,
-    West,
-}
-
-#[derive(Copy, Clone)]
-pub struct Position {
-    pub dir: Direction,
-    pub x_pos: i64,
-    pub y_pos: i64,
-}
 
 #[derive(PDisplay, PFromStr, Copy, Clone)]
 pub enum NavigationAction {
@@ -48,124 +32,110 @@ pub trait Ship {
 
 #[derive(Copy, Clone)]
 pub struct Simple {
-    position: Position,
+    position: Complex<i64>,
+    direction: Complex<i64>,
 }
 
 impl Simple {
     pub fn new() -> Self {
-        let position = Position {
-            dir: Direction::East,
-            x_pos: 0,
-            y_pos: 0,
-        };
-
-        Self { position }
+        Self {
+            position: Complex::new(0, 0),
+            direction: Complex::new(1, 0),
+        }
     }
 
-    fn turn(&mut self, steps: i64) {
-        let turned = ((self.position.dir as i64 + steps) + 4) % 4;
-        if let Some(new_dir) = FromPrimitive::from_i64(turned) {
-            self.position.dir = new_dir;
+    fn turn_left(&mut self, steps: i64) {
+        for _ in 0..steps {
+            self.direction *= Complex::new(0, 1);
+        }
+    }
+
+    fn turn_right(&mut self, steps: i64) {
+        for _ in 0..steps {
+            self.direction *= Complex::new(0, -1);
         }
     }
 
     fn move_forward(&mut self, steps: i64) {
-        match self.position.dir {
-            Direction::North => self.position.y_pos += steps,
-            Direction::South => self.position.y_pos -= steps,
-            Direction::East => self.position.x_pos += steps,
-            Direction::West => self.position.x_pos -= steps,
-        };
+        self.position += self.direction.scale(steps);
     }
 }
 
 impl Ship for Simple {
     fn perform_action(&mut self, action: &NavigationAction) {
         match *action {
-            NavigationAction::North(n) => self.position.y_pos += n,
-            NavigationAction::South(n) => self.position.y_pos -= n,
-            NavigationAction::East(n) => self.position.x_pos += n,
-            NavigationAction::West(n) => self.position.x_pos -= n,
-            NavigationAction::Left(n) => self.turn(-n / 90),
-            NavigationAction::Right(n) => self.turn(n / 90),
+            NavigationAction::North(n) => self.position.im += n,
+            NavigationAction::South(n) => self.position.im -= n,
+            NavigationAction::East(n) => self.position.re += n,
+            NavigationAction::West(n) => self.position.re -= n,
+            NavigationAction::Left(n) => self.turn_left(n / 90),
+            NavigationAction::Right(n) => self.turn_right(n / 90),
             NavigationAction::Forward(n) => self.move_forward(n),
         };
     }
 
     fn get_distance(&self) -> i64 {
-        self.position.x_pos.abs() + self.position.y_pos.abs()
+        self.position.l1_norm()
     }
 }
 
 #[derive(Copy, Clone)]
 struct Waypoint {
-    x_pos: i64,
-    y_pos: i64,
+    position: Complex<i64>,
 }
 
 #[derive(Copy, Clone)]
 pub struct WithWaypoint {
-    position: Position,
+    position: Complex<i64>,
     waypoint: Waypoint,
 }
 
 impl Waypoint {
     #[allow(clippy::cast_precision_loss)]
-    fn rotate(&mut self, degrees: i64, around: &Position) {
-        let cur_x = self.x_pos - around.x_pos;
-        let cur_y = self.y_pos - around.y_pos;
+    fn rotate(&mut self, degrees: i64, around: &Complex<i64>) {
+        let cur_pos = self.position - around;
 
         let (s, c) = (degrees as f64).to_radians().sin_cos();
 
-        let cur_x = cur_x as f64;
-        let cur_y = cur_y as f64;
+        let cur_x = cur_pos.re as f64;
+        let cur_y = cur_pos.im as f64;
 
         let new_x = (c * cur_x - s * cur_y).round() as i64;
         let new_y = (s * cur_x + c * cur_y).round() as i64;
 
-        self.x_pos = new_x + around.x_pos;
-        self.y_pos = new_y + around.y_pos;
+        let new_pos = Complex::new(new_x, new_y);
+
+        self.position = new_pos + around;
     }
 }
 
 impl WithWaypoint {
     pub fn new() -> Self {
-        let position = Position {
-            dir: Direction::East,
-            x_pos: 0,
-            y_pos: 0,
-        };
-
-        let waypoint = Waypoint {
-            x_pos: 10,
-            y_pos: 1,
-        };
-
-        Self { position, waypoint }
+        Self {
+            position: Complex::new(0, 0),
+            waypoint: Waypoint {
+                position: Complex::new(10, 1),
+            },
+        }
     }
 
     fn move_forward(&mut self, steps: i64) {
-        let x_steps = self.waypoint.x_pos - self.position.x_pos;
-        let y_steps = self.waypoint.y_pos - self.position.y_pos;
+        let p_steps = self.waypoint.position - self.position;
 
-        let to_move_x = steps * x_steps;
-        let to_move_y = steps * y_steps;
+        let to_move = p_steps.scale(steps);
 
-        self.position.x_pos += to_move_x;
-        self.position.y_pos += to_move_y;
-
-        self.waypoint.x_pos += to_move_x;
-        self.waypoint.y_pos += to_move_y;
+        self.position += to_move;
+        self.waypoint.position += to_move;
     }
 }
 
 impl Ship for WithWaypoint {
     fn perform_action(&mut self, action: &NavigationAction) {
         match *action {
-            NavigationAction::North(n) => self.waypoint.y_pos += n,
-            NavigationAction::South(n) => self.waypoint.y_pos -= n,
-            NavigationAction::East(n) => self.waypoint.x_pos += n,
-            NavigationAction::West(n) => self.waypoint.x_pos -= n,
+            NavigationAction::North(n) => self.waypoint.position.im += n,
+            NavigationAction::South(n) => self.waypoint.position.im -= n,
+            NavigationAction::East(n) => self.waypoint.position.re += n,
+            NavigationAction::West(n) => self.waypoint.position.re -= n,
             NavigationAction::Left(n) => self.waypoint.rotate(n, &self.position),
             NavigationAction::Right(n) => self.waypoint.rotate(-n, &self.position),
             NavigationAction::Forward(n) => self.move_forward(n),
@@ -173,6 +143,6 @@ impl Ship for WithWaypoint {
     }
 
     fn get_distance(&self) -> i64 {
-        self.position.x_pos.abs() + self.position.y_pos.abs()
+        self.position.l1_norm()
     }
 }
