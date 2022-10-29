@@ -120,7 +120,7 @@ mod tests {
 67,7,59,61";
 
         let data = generate(inp).unwrap();
-        assert_eq!(Some(754018), part2(&data));
+        assert_eq!(Some(754_018), part2(&data));
     }
 
     #[test]
@@ -129,7 +129,7 @@ mod tests {
 67,x,7,59,61";
 
         let data = generate(inp).unwrap();
-        assert_eq!(Some(779210), part2(&data));
+        assert_eq!(Some(779_210), part2(&data));
     }
 
     #[test]
@@ -138,7 +138,7 @@ mod tests {
 67,7,x,59,61";
 
         let data = generate(inp).unwrap();
-        assert_eq!(Some(1261476), part2(&data));
+        assert_eq!(Some(1_261_476), part2(&data));
     }
 
     #[test]
@@ -147,6 +147,6 @@ mod tests {
 1789,37,47,1889";
 
         let data = generate(inp).unwrap();
-        assert_eq!(Some(1202161486), part2(&data));
+        assert_eq!(Some(1_202_161_486), part2(&data));
     }
 }
