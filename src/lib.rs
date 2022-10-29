@@ -7,6 +7,8 @@
     clippy::cast_sign_loss
 )]
 
+mod ship;
+
 mod day01;
 mod day02;
 mod day03;
