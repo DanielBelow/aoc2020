@@ -52,7 +52,7 @@ mod tests {
 
     #[test]
     fn test_sample() {
-        let inp = r#"abc
+        let inp = r"abc
 
 a
 b
@@ -66,7 +66,7 @@ a
 a
 a
 
-b"#;
+b";
 
         let data = generate(inp);
         assert_eq!(11, part1(&data));

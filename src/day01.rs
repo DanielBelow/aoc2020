@@ -9,7 +9,7 @@ pub fn generate(inp: &str) -> Vec<u64> {
         .collect()
 }
 
-fn find_product(num: u64, v: &[u64]) -> Option<u64> {
+const fn find_product(num: u64, v: &[u64]) -> Option<u64> {
     if v.is_empty() {
         return None;
     }
@@ -34,7 +34,7 @@ fn find_product(num: u64, v: &[u64]) -> Option<u64> {
 }
 
 #[aoc(day1, part1)]
-pub fn part1(v: &[u64]) -> Option<u64> {
+pub const fn part1(v: &[u64]) -> Option<u64> {
     find_product(2020, v)
 }
 

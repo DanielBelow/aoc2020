@@ -7,7 +7,7 @@ use parse_display::{Display as PDisplay, FromStr as PFromStr};
 use regex::Regex;
 
 lazy_static! {
-    static ref CLEAN_BAGS: Regex = Regex::new(r#"(\.|bags|bag)"#).unwrap();
+    static ref CLEAN_BAGS: Regex = Regex::new(r"(\.|bags|bag)").expect("Valid regex");
 }
 
 #[derive(PDisplay, PFromStr)]

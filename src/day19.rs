@@ -135,13 +135,13 @@ fn to_regex(idx: usize, rules: &[Rule], p2: bool) -> Option<String> {
 }
 
 fn rules_to_regex(rules: &[Rule], p2: bool) -> Option<Regex> {
-    match to_regex(0, rules, p2) {
-        Some(rgx) => {
+    to_regex(0, rules, p2).map_or_else(
+        || None,
+        |rgx| {
             let re = format!("^{rgx}$");
             Regex::new(re.as_str()).ok()
-        }
-        _ => None,
-    }
+        },
+    )
 }
 
 fn count_matches(msgs: &[String], re: &Regex) -> usize {
@@ -177,7 +177,9 @@ abbbab
 aaabbb
 aaaabbb";
 
-        let data = generate(inp).unwrap();
+        let Some(data) = generate(inp) else {
+            panic!("Could not parse test input")
+        };
         assert_eq!(Some(2), part1(&data));
     }
 
@@ -231,7 +233,9 @@ aaaabbaabbaaaaaaabbbabbbaaabbaabaaa
 babaaabbbaaabaababbaabababaaab
 aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba";
 
-        let data = generate(inp).unwrap();
+        let Some(data) = generate(inp) else {
+            panic!("Could not parse test input")
+        };
         assert_eq!(Some(3), part1(&data));
     }
 
@@ -285,7 +289,9 @@ aaaabbaabbaaaaaaabbbabbbaaabbaabaaa
 babaaabbbaaabaababbaabababaaab
 aabbbbbaabbbaaaaaabbbbbababaaaaabbaaabba";
 
-        let data = generate(inp).unwrap();
+        let Some(data) = generate(inp) else {
+            panic!("Could not parse test input")
+        };
         assert_eq!(Some(12), part2(&data));
     }
 }

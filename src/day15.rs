@@ -53,9 +53,11 @@ mod tests {
 
     fn test_samples(samples: &[(&str, usize)], rounds: usize) {
         for (inp, exp) in samples {
-            let data = generate(inp);
-            assert!(data.is_some());
-            assert_eq!(Some(*exp), play_n_rounds(&data.unwrap(), rounds));
+            let Some(data) = generate(inp) else {
+                panic!("Could not parse test input")
+            };
+
+            assert_eq!(Some(*exp), play_n_rounds(&data, rounds));
         }
     }
 

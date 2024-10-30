@@ -37,7 +37,7 @@ pub struct Simple {
 }
 
 impl Simple {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             position: Complex::new(0, 0),
             direction: Complex::new(1, 0),
@@ -100,8 +100,8 @@ impl Waypoint {
         let cur_x = cur_pos.re as f64;
         let cur_y = cur_pos.im as f64;
 
-        let new_x = (c * cur_x - s * cur_y).round() as i64;
-        let new_y = (s * cur_x + c * cur_y).round() as i64;
+        let new_x = c.mul_add(cur_x, -(s * cur_y)).round() as i64;
+        let new_y = s.mul_add(cur_x, c * cur_y).round() as i64;
 
         let new_pos = Complex::new(new_x, new_y);
 
@@ -110,7 +110,7 @@ impl Waypoint {
 }
 
 impl WithWaypoint {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             position: Complex::new(0, 0),
             waypoint: Waypoint {

@@ -41,7 +41,10 @@ fn setup_tiles(insts: &[Vec<(i64, i64)>]) -> Vec<Vec<bool>> {
             let pos = it
                 .iter()
                 .fold((LEN / 2, LEN / 2), |(acc_l, acc_r), (it_l, it_r)| {
+                    #[allow(clippy::cast_possible_wrap)]
                     let new_x = (acc_l as i64 + it_l) as usize;
+
+                    #[allow(clippy::cast_possible_wrap)]
                     let new_y = (acc_r as i64 + it_r) as usize;
                     (new_x, new_y)
                 });
@@ -79,7 +82,10 @@ pub fn part2(insts: &[Vec<(i64, i64)>]) -> usize {
             let black_neighbors = neighbors
                 .iter()
                 .filter(|(l, r)| {
+                    #[allow(clippy::cast_possible_wrap)]
                     let dx = (x as i64 + l) as usize;
+
+                    #[allow(clippy::cast_possible_wrap)]
                     let dy = (y as i64 + r) as usize;
                     !cur_tiles[dx][dy]
                 })

@@ -7,11 +7,11 @@ pub fn generate(inp: &str) -> Vec<usize> {
         .collect()
 }
 
-fn step(value: usize, subject_num: usize) -> usize {
+const fn step(value: usize, subject_num: usize) -> usize {
     (value * subject_num) % 20_201_227
 }
 
-fn get_loop_size(target: usize) -> usize {
+const fn get_loop_size(target: usize) -> usize {
     const SUBJECT_NUM: usize = 7;
 
     let mut loop_size = 0;

@@ -32,14 +32,14 @@ pub fn generate(inp: &str) -> Vec<Vec<MathToken>> {
         .collect()
 }
 
-fn replace_simple_parens(idx: usize, tokens: &[MathToken]) -> Option<MathToken> {
+const fn replace_simple_parens(idx: usize, tokens: &[MathToken]) -> Option<MathToken> {
     match (tokens[idx], tokens[idx + 1], tokens[idx + 2]) {
         (MathToken::LParen, op, MathToken::RParen) => Some(op),
         _ => None,
     }
 }
 
-fn replace_simple_arith(idx: usize, tokens: &[MathToken]) -> Option<MathToken> {
+const fn replace_simple_arith(idx: usize, tokens: &[MathToken]) -> Option<MathToken> {
     match (tokens[idx], tokens[idx + 1], tokens[idx + 2]) {
         (MathToken::Number(lhs), op, MathToken::Number(rhs)) => match op {
             MathToken::Add => Some(MathToken::Number(lhs + rhs)),

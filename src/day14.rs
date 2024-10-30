@@ -33,10 +33,7 @@ pub fn generate(inp: &str) -> Vec<Initialization> {
             });
         } else if let Ok(access) = l.parse::<MemAccess>() {
             if let Some(init) = res.last_mut() {
-                init.accesses.push(MemAccess {
-                    index: access.index,
-                    value: access.value,
-                });
+                init.accesses.push(access);
             }
         }
     }

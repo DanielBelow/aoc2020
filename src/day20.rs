@@ -31,16 +31,20 @@ const MONSTER_OFFSETS: &[(i64, i64); 15] = &[
 
 impl MapTile {
     fn is_sea_monster_at(&self, x: usize, y: usize) -> bool {
-        MONSTER_OFFSETS
-            .iter()
-            .all(|(dy, dx)| self.map[(y as i64 + dy) as usize][(x as i64 + dx) as usize] == '#')
+        MONSTER_OFFSETS.iter().all(|(dy, dx)| {
+            #[allow(clippy::cast_possible_wrap)]
+            let value = self.map[(y as i64 + dy) as usize][(x as i64 + dx) as usize];
+            value == '#'
+        })
     }
 
     fn replace_sea_monsters(&mut self) {
         for (y, x) in iproduct!(1..self.map.len() - 1, 0..self.map.len() - 19) {
             if self.is_sea_monster_at(x, y) {
-                for (dy, dx) in MONSTER_OFFSETS.iter() {
-                    self.map[(y as i64 + dy) as usize][(x as i64 + dx) as usize] = 'O';
+                for (dy, dx) in MONSTER_OFFSETS {
+                    #[allow(clippy::cast_possible_wrap)]
+                    let entry = &mut self.map[(y as i64 + dy) as usize][(x as i64 + dx) as usize];
+                    *entry = 'O';
                 }
             }
         }
@@ -233,7 +237,7 @@ fn reconstruct_image(dim: usize, data: &[MapTile]) -> Vec<Vec<MapTile>> {
 
     let mut visited = HashSet::new();
 
-    for tile in data.iter() {
+    for tile in data {
         let cur_id = tile.id;
         visited.insert(cur_id);
 

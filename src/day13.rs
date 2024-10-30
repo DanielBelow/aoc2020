@@ -23,6 +23,7 @@ pub fn generate(inp: &str) -> Option<BusSchedule> {
         .split(',')
         .enumerate()
         .filter_map(|(order, it)| {
+            #[allow(clippy::cast_possible_wrap)]
             let order = order as i64;
             it.parse::<i64>().ok().map(|id| BusData { id, order })
         })
@@ -101,7 +102,9 @@ mod tests {
     fn test_sample_part1() {
         let inp = "939
 7,13,x,x,59,x,31,19";
-        let data = generate(inp).unwrap();
+        let Some(data) = generate(inp) else {
+            panic!("Could not parse test input")
+        };
         assert_eq!(Some(295), part1(&data));
     }
 
@@ -110,7 +113,9 @@ mod tests {
         let inp = "0
 17,x,13,19";
 
-        let data = generate(inp).unwrap();
+        let Some(data) = generate(inp) else {
+            panic!("Could not parse test input")
+        };
         assert_eq!(Some(3417), part2(&data));
     }
 
@@ -119,7 +124,9 @@ mod tests {
         let inp = "123
 67,7,59,61";
 
-        let data = generate(inp).unwrap();
+        let Some(data) = generate(inp) else {
+            panic!("Could not parse test input")
+        };
         assert_eq!(Some(754_018), part2(&data));
     }
 
@@ -128,7 +135,9 @@ mod tests {
         let inp = "123
 67,x,7,59,61";
 
-        let data = generate(inp).unwrap();
+        let Some(data) = generate(inp) else {
+            panic!("Could not parse test input")
+        };
         assert_eq!(Some(779_210), part2(&data));
     }
 
@@ -137,7 +146,9 @@ mod tests {
         let inp = "123
 67,7,x,59,61";
 
-        let data = generate(inp).unwrap();
+        let Some(data) = generate(inp) else {
+            panic!("Could not parse test input")
+        };
         assert_eq!(Some(1_261_476), part2(&data));
     }
 
@@ -146,7 +157,9 @@ mod tests {
         let inp = "123
 1789,37,47,1889";
 
-        let data = generate(inp).unwrap();
+        let Some(data) = generate(inp) else {
+            panic!("Could not parse test input")
+        };
         assert_eq!(Some(1_202_161_486), part2(&data));
     }
 }

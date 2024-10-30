@@ -11,7 +11,7 @@ pub fn generate(inp: &str) -> Vec<i64> {
         .sorted()
         .collect_vec();
 
-    let max = nums.iter().max().copied().unwrap();
+    let max = nums.iter().max().copied().expect("Nums is not empty");
     nums.insert(0, 0);
     nums.push(max + 3);
 

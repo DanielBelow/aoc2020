@@ -149,13 +149,17 @@ Player 2:
 
     #[test]
     fn test_part1() {
-        let game = generate(INP);
-        assert_eq!(306, part1(&game.unwrap()));
+        let Some(game) = generate(INP) else {
+            panic!("Could not parse test input")
+        };
+        assert_eq!(306, part1(&game));
     }
 
     #[test]
     fn test_part2() {
-        let game = generate(INP);
-        assert_eq!(291, part2(&game.unwrap()));
+        let Some(game) = generate(INP) else {
+            panic!("Could not parse test input")
+        };
+        assert_eq!(291, part2(&game));
     }
 }

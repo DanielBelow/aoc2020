@@ -9,7 +9,7 @@ pub struct SimulationContext {
 }
 
 impl SimulationContext {
-    pub fn new(single_step: bool, crowd_limit: usize) -> Self {
+    pub const fn new(single_step: bool, crowd_limit: usize) -> Self {
         Self {
             single_step,
             crowd_limit,
@@ -34,7 +34,8 @@ pub struct MapData {
 }
 
 impl MapData {
-    fn is_valid_pos(&self, row: i64, col: i64) -> bool {
+    #[allow(clippy::cast_possible_wrap)]
+    const fn is_valid_pos(&self, row: i64, col: i64) -> bool {
         row >= 0 && col >= 0 && row < self.height as i64 && col < self.width as i64
     }
 
@@ -49,6 +50,7 @@ impl MapData {
             return Some(MapTile::Floor);
         }
 
+        #[allow(clippy::cast_possible_wrap)]
         let num_occupied_adjacent =
             self.count_visible_occupied_seats(row as i64, col as i64, context.single_step);
 
@@ -120,7 +122,7 @@ impl MapData {
             .count()
     }
 
-    pub fn new(width: usize, height: usize, elements: MapElements) -> Self {
+    pub const fn new(width: usize, height: usize, elements: MapElements) -> Self {
         Self {
             width,
             height,

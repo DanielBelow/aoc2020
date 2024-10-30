@@ -6,7 +6,7 @@ pub struct SimulationContext {
 }
 
 impl SimulationContext {
-    pub fn new(num_steps: usize) -> Self {
+    pub const fn new(num_steps: usize) -> Self {
         Self { num_steps }
     }
 }
@@ -21,7 +21,7 @@ pub struct Data3d {
 }
 
 impl Data3d {
-    pub fn new(dimension: usize, elements: MapElements3D) -> Self {
+    pub const fn new(dimension: usize, elements: MapElements3D) -> Self {
         Self {
             dimension,
             elements,
@@ -36,7 +36,7 @@ pub struct Data4d {
 }
 
 impl Data4d {
-    pub fn new(dimension: usize, elements: MapElements4D) -> Self {
+    pub const fn new(dimension: usize, elements: MapElements4D) -> Self {
         Self {
             dimension,
             elements,
@@ -58,8 +58,13 @@ fn run_iteration_3d(
         let alive = delta
             .iter()
             .filter(|(dx, dy, dz)| {
+                #[allow(clippy::cast_possible_wrap)]
                 let x = ((x as i64) + dx) as usize;
+
+                #[allow(clippy::cast_possible_wrap)]
                 let y = ((y as i64) + dy) as usize;
+
+                #[allow(clippy::cast_possible_wrap)]
                 let z = ((z as i64) + dz) as usize;
 
                 prev_map[x][y][z]
@@ -90,9 +95,16 @@ fn run_iteration_4d(
         let alive = delta
             .iter()
             .filter(|(dx, dy, dz, dw)| {
+                #[allow(clippy::cast_possible_wrap)]
                 let x = ((x as i64) + dx) as usize;
+
+                #[allow(clippy::cast_possible_wrap)]
                 let y = ((y as i64) + dy) as usize;
+
+                #[allow(clippy::cast_possible_wrap)]
                 let z = ((z as i64) + dz) as usize;
+
+                #[allow(clippy::cast_possible_wrap)]
                 let w = ((w as i64) + dw) as usize;
 
                 prev_map[x][y][z][w]

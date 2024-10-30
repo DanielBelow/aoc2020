@@ -7,9 +7,9 @@ use parse_display::{Display as PDisplay, FromStr as PFromStr};
 use regex::Regex;
 
 lazy_static! {
-    static ref HAIR_RE: Regex = Regex::new(r"^#[0-9a-f]{6}$").unwrap();
-    static ref PID_RE: Regex = Regex::new(r"^[0-9]{9}$").unwrap();
-    static ref WS_RE: Regex = Regex::new(r"\s{2,}").unwrap();
+    static ref HAIR_RE: Regex = Regex::new(r"^#[0-9a-f]{6}$").expect("Valid regex");
+    static ref PID_RE: Regex = Regex::new(r"^[0-9]{9}$").expect("Valid regex");
+    static ref WS_RE: Regex = Regex::new(r"\s{2,}").expect("Valid regex");
 }
 
 #[derive(PDisplay, PFromStr)]

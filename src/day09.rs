@@ -8,7 +8,7 @@ pub fn generate(inp: &str) -> Vec<i64> {
         .collect()
 }
 
-fn contains_sum(num: i64, slice: &[i64]) -> bool {
+const fn contains_sum(num: i64, slice: &[i64]) -> bool {
     let mut low = 0;
     let mut high = slice.len() - 1;
 

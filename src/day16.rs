@@ -18,7 +18,7 @@ pub struct FieldRules {
 }
 
 impl FieldRules {
-    fn matches(&self, num: usize) -> bool {
+    const fn matches(&self, num: usize) -> bool {
         (num >= self.rule1.from && num <= self.rule1.to)
             || (num >= self.rule2.from && num <= self.rule2.to)
     }
@@ -104,12 +104,13 @@ fn try_remove_single_rule(rule: &FieldRules, remove_from: &mut [Vec<&FieldRules>
         .iter_mut()
         .filter(|it| it.len() > 1)
         .any(|all_rules| {
-            if let Some(idx) = all_rules.iter().position(|it| *it == rule) {
-                all_rules.remove(idx);
-                true
-            } else {
-                false
-            }
+            all_rules
+                .iter()
+                .position(|it| *it == rule)
+                .map_or(false, |idx| {
+                    all_rules.remove(idx);
+                    true
+                })
         })
 }
 
@@ -179,9 +180,11 @@ nearby tickets:
 55,2,20
 38,6,12";
 
-        let data = generate(inp);
-        assert!(data.is_some());
-        assert_eq!(71, part1(&data.unwrap()));
+        let Some(data) = generate(inp) else {
+            panic!("Could not parse test input")
+        };
+
+        assert_eq!(71, part1(&data));
     }
 
     #[test]
@@ -198,8 +201,10 @@ nearby tickets:
 15,1,5
 5,14,9";
 
-        let data = generate(inp);
-        assert!(data.is_some());
-        assert_eq!(11 * 12, part2(&data.unwrap()));
+        let Some(data) = generate(inp) else {
+            panic!("Could not parse test input")
+        };
+
+        assert_eq!(11 * 12, part2(&data));
     }
 }
